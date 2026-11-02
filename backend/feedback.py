@@ -22,37 +22,50 @@ def submit_feedback():
     """FR12: save required response feedback before the user can continue chatting."""
     data = json_payload()
     message_id = data.get("message_id")
-    session_id = data.get("session_id")
     rating = data.get("rating")
     correctness = data.get("correctness")
     length_type = data.get("length_type") or data.get("length_rating")
     comment = data.get("comment")
 
     db = get_db()
-    if not message_id or not session_id:
-        return jsonify({"error": "A message and session are required for feedback."}), 400
 
-    # FR12: message feedback is mandatory and must include all required fields.
-    if rating not in (1, 2, 3, 4):
-        return jsonify({"error": "Rating from 1 to 4 is required."}), 400
-    if correctness not in ("Correct", "Partial", "Incorrect"):
-        return jsonify({"error": "Correctness must be Correct, Partial, or Incorrect."}), 400
-    if length_type not in ("Short", "To the Point", "Lengthy"):
-        return jsonify({"error": "Length type must be Short, To the Point, or Lengthy."}), 400
+    if message_id:
+        # FR12: message feedback is mandatory and must include all required fields.
+        if rating not in (1, 2, 3, 4):
+            return jsonify({"error": "Rating from 1 to 4 is required."}), 400
+        if correctness not in ("Correct", "Partial", "Incorrect"):
+            return jsonify({"error": "Correctness must be Correct, Partial, or Incorrect."}), 400
+        if length_type not in ("Short", "To the Point", "Lengthy"):
+            return jsonify({"error": "Length type must be Short, To the Point, or Lengthy."}), 400
 
-    message = db.execute(
-        """
-        SELECT id FROM messages
-        WHERE id = ? AND session_id = ? AND user_id = ? AND role = 'assistant'
-        """,
-        (message_id, session_id, current_user_id()),
-    ).fetchone()
+        # session_id comes from the message itself; feedback requires only the message.
+        message = db.execute(
+            """
+            SELECT id, session_id FROM messages
+            WHERE id = ? AND user_id = ? AND role = 'assistant'
+            """,
+            (message_id, current_user_id()),
+        ).fetchone()
 
-    if not message:
-        return jsonify({"error": "Assistant message not found."}), 404
+        if not message:
+            return jsonify({"error": "Assistant message not found."}), 404
 
-    # The UNIQUE(message_id) constraint and this UPSERT make duplicate
-    # submissions safe even when two requests arrive concurrently.
+        session_id = message["session_id"]
+    else:
+        # General bot feedback: no message required; something must be given.
+        if rating not in (1, 2, 3, 4) and not (comment or "").strip():
+            return jsonify({"error": "Select a rating or write a comment."}), 400
+        if correctness is not None and correctness not in ("Correct", "Partial", "Incorrect"):
+            return jsonify({"error": "Correctness must be Correct, Partial, or Incorrect."}), 400
+        if length_type is not None and length_type not in ("Short", "To the Point", "Lengthy"):
+            return jsonify({"error": "Length type must be Short, To the Point, or Lengthy."}), 400
+        message_id = None
+        session_id = None
+
+    # One feedback per message: the UNIQUE(message_id) constraint and this UPSERT make
+    # duplicate submissions safe even when two requests arrive concurrently. General
+    # feedback (message_id = NULL) always inserts a new row because UNIQUE allows many
+    # NULLs and ON CONFLICT(message_id) does not match NULL keys.
     db.execute(
         """
         INSERT INTO feedback

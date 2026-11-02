@@ -249,8 +249,7 @@ const ui = {
 // Feedback action: opens the dedicated feedback page for one assistant message.
 const feedback = {
   open(messageId) {
-    const sessionParam = app.currentSessionId ? `&session_id=${encodeURIComponent(app.currentSessionId)}` : '';
-    window.location.href = `/feedback?message_id=${encodeURIComponent(messageId)}${sessionParam}`;
+    window.location.href = `/feedback?message_id=${encodeURIComponent(messageId)}`;
   },
 };
 
@@ -403,7 +402,6 @@ const app = {
     try {
       await api.submitFeedback({
         message_id: app.pendingFeedbackMessageId,
-        session_id: app.currentSessionId,
         rating: app.selectedRating,
         correctness: app.selectedCorrectness,
         length_type: app.selectedLength,

@@ -86,7 +86,7 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS feedback (
             id              TEXT PRIMARY KEY,
-            message_id      TEXT NOT NULL UNIQUE,
+            message_id      TEXT UNIQUE,
             session_id      TEXT NOT NULL,
             user_id         TEXT NOT NULL,
             rating          INTEGER,
@@ -182,8 +182,16 @@ def init_db():
         cursor.execute("DROP TABLE analytics_summaries_old")
     db.commit()
 
-    # Existing databases need a table rebuild because SQLite cannot add a
-    # foreign-key constraint to an existing table with ALTER TABLE.
+    # A failed rebuild (e.g. the server was killed mid-migration) can leave a
+    # feedback_old table behind, which blocks the ALTER TABLE rename below.
+    leftover = cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('feedback_old')"
+    ).fetchone()
+    if leftover:
+        cursor.execute("DROP TABLE feedback_old")
+
+    # Existing databases need a table rebuild because SQLite cannot drop a
+    # NOT NULL constraint or add a foreign key with ALTER TABLE.
     feedback_fks = {
         (row[2], row[3])
         for row in cursor.execute("PRAGMA foreign_key_list(feedback)").fetchall()
@@ -193,14 +201,26 @@ def init_db():
         ("session_id", "chat_sessions"),
         ("user_id", "users"),
     }
-    if not required_fks.issubset(feedback_fks):
+    # Rebuild when the FK set or the nullability is wrong for the current
+    # schema: message_id/session_id must be nullable (general bot feedback has
+    # neither), and message_id must stay unique per message.
+    feedback_cols = {
+        row[1]: row for row in cursor.execute("PRAGMA table_info(feedback)").fetchall()
+    }
+    message_col = feedback_cols.get("message_id")
+    session_col = feedback_cols.get("session_id")
+    nullable_ok = (
+        message_col and not message_col[3]
+        and session_col and not session_col[3]
+    )
+    if not required_fks.issubset(feedback_fks) or not nullable_ok:
         cursor.execute("ALTER TABLE feedback RENAME TO feedback_old")
         cursor.execute(
             """
             CREATE TABLE feedback (
                 id              TEXT PRIMARY KEY,
-                message_id      TEXT NOT NULL UNIQUE,
-                session_id      TEXT NOT NULL,
+                message_id      TEXT UNIQUE,
+                session_id      TEXT,
                 user_id         TEXT NOT NULL,
                 rating          INTEGER,
                 correctness     TEXT,
@@ -234,12 +254,15 @@ def init_db():
 
     # Enforce one feedback row per assistant message at the database level.
     # If a legacy database contains duplicates, retain the newest row first.
+    # NULL message_id rows (general bot feedback) are exempt from the dedupe.
     cursor.execute(
         """
         DELETE FROM feedback
-        WHERE rowid NOT IN (
+        WHERE message_id IS NOT NULL
+          AND rowid NOT IN (
             SELECT MAX(rowid)
             FROM feedback
+            WHERE message_id IS NOT NULL
             GROUP BY message_id
         )
         """

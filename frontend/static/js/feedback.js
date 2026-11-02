@@ -3,16 +3,14 @@
 // Feedback page controller: validates ratings and sends them to the backend.
 const feedbackPage = {
   currentMessageId: null,
-  currentSessionId: null,
   selectedRating: 0,
   selectedCorrectness: null,
   selectedLength: null,
 
-  // Read selected message/session ids from the URL and prepare the form.
+  // Read the selected message id from the URL and prepare the form.
   init() {
     const params = new URLSearchParams(window.location.search);
     feedbackPage.currentMessageId = params.get('message_id');
-    feedbackPage.currentSessionId = params.get('session_id');
 
     document.querySelectorAll('.star').forEach(star => {
       star.addEventListener('click', () => {
@@ -49,26 +47,33 @@ const feedbackPage = {
     statusEl.textContent = '';
     statusEl.className = 'feedback-status';
 
-    if (!feedbackPage.selectedRating) {
-      feedbackPage.showError('Please select a star rating.');
-      return;
-    }
-    if (!feedbackPage.selectedCorrectness) {
-      feedbackPage.showError('Please select a correctness option.');
-      return;
-    }
-    if (!feedbackPage.selectedLength) {
-      feedbackPage.showError('Please select a length option.');
+    // Message-specific feedback needs every field; general bot feedback
+    // (no message selected) only needs a rating or a comment.
+    const comment = document.getElementById('feedback-comment').value.trim();
+    if (feedbackPage.currentMessageId) {
+      if (!feedbackPage.selectedRating) {
+        feedbackPage.showError('Please select a star rating.');
+        return;
+      }
+      if (!feedbackPage.selectedCorrectness) {
+        feedbackPage.showError('Please select a correctness option.');
+        return;
+      }
+      if (!feedbackPage.selectedLength) {
+        feedbackPage.showError('Please select a length option.');
+        return;
+      }
+    } else if (!feedbackPage.selectedRating && !comment) {
+      feedbackPage.showError('Select a rating or write a comment.');
       return;
     }
 
     const payload = {
       message_id: feedbackPage.currentMessageId,
-      session_id: feedbackPage.currentSessionId || null,
-      rating: feedbackPage.selectedRating,
+      rating: feedbackPage.selectedRating || null,
       correctness: feedbackPage.selectedCorrectness,
       length_rating: feedbackPage.selectedLength,
-      comment: document.getElementById('feedback-comment').value.trim() || null,
+      comment: comment || null,
     };
 
     try {
