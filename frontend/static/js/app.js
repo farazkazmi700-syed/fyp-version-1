@@ -266,6 +266,13 @@ const app = {
         app.handleSend();
       }
     });
+    // FR13: clicking the frozen chat box pops up the pending feedback panel.
+    document.getElementById('message-input').addEventListener('click', () => {
+      if (app.pendingFeedbackMessageId) app.showMandatoryFeedback();
+    });
+    document.querySelector('.input-wrapper')?.addEventListener('click', () => {
+      if (app.pendingFeedbackMessageId) app.showMandatoryFeedback();
+    });
     app.bindMandatoryFeedbackControls();
   },
 
@@ -338,13 +345,18 @@ const app = {
       // FR9/FR10: the response was rendered incrementally and is now finalized.
       ui.finishStreamingMessage(streamingMessage, result);
       app.requireFeedback(result.message_id);
+      // FR13: the composer stays frozen here, but the feedback panel only
+      // pops up when the user clicks the locked chat box.
     } catch (err) {
       ui.hideTyping();
       streamingMessage?.remove();
       ui.appendMessage('assistant', `Error: ${err.message}. Please try again.`, null, new Date().toISOString());
     } finally {
       app.isLoading = false;
+      // FR13: keep the composer frozen while feedback for this response is
+      // still pending; it unlocks only after feedback submission succeeds.
       app.setComposerLocked(false);
+      if (app.pendingFeedbackMessageId) app.setComposerLocked(true);
       input.focus();
     }
   },
@@ -361,14 +373,23 @@ const app = {
   },
 
   showMandatoryFeedback() {
+    // FR13: freeze the composer while mandatory feedback is outstanding.
     document.getElementById('mandatory-feedback').classList.remove('hidden');
     app.setComposerLocked(true);
   },
 
   // FR13: central input-control switch used to lock and unlock the chat.
+  // The textarea is set readOnly (not disabled) so it still fires click
+  // events, which pop up the pending feedback panel.
   setComposerLocked(locked) {
-    document.getElementById('message-input').disabled = locked;
+    const input = document.getElementById('message-input');
+    input.readOnly = locked;
+    input.disabled = false;
+    input.placeholder = locked
+      ? 'Chat locked — click here to submit feedback for the previous response...'
+      : 'Message LLaMA 3...';
     document.getElementById('btn-send').disabled = locked || app.isLoading;
+    document.querySelector('.input-wrapper')?.classList.toggle('locked', locked);
   },
 
   // FR13: successful feedback completion unlocks chat input for the next turn.

@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Analytics Dashboard — Multi-Turn AI Chatbot</title>
 
+  <!-- Google Fonts for crisp modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- Shared stylesheet -->
   <link rel="stylesheet" href="/static/css/style.css" />
   <!-- Plotly for interactive dynamic graphs -->
@@ -29,10 +34,10 @@
           </svg>
         </button>
       </div>
-        <nav class="page-nav" aria-label="Main navigation">
-          <a class="menu-item analytics-menu-item active" href="/analytics" aria-current="page">Analytics</a>
-          <a class="menu-item" href="/chat">Chat</a>
-        </nav>
+      <nav class="page-nav" aria-label="Main navigation">
+        <a class="menu-item analytics-menu-item active" href="/analytics" aria-current="page">Analytics</a>
+        <a class="menu-item" href="/chat">Chat</a>
+      </nav>
 
       <!-- Signed-in user info -->
       <div class="sidebar-footer">
@@ -76,32 +81,14 @@
          ================================================================ -->
     <main class="analytics-main" id="analytics-main" tabindex="-1">
 
-      <!-- Page header with Libraries & Packages badge stack -->
+      <!-- Minimalist Executive Header -->
       <header class="chat-header analytics-header">
         <div class="chat-title analytics-title-group" style="width: 100%;">
-          <div>
-            <h1>Analytics Dashboard</h1>
-            <p id="analytics-subtitle" style="font-size: 0.875rem; color: var(--muted); margin-top: 4px;">Advanced analytical reporting &amp; machine learning insights</p>
-          </div>
-
-          <!-- Technologies & Libraries Badge Banner -->
-          <div class="analytics-tech-stack" aria-label="Analytics Tech Stack">
-            <div class="tech-badge" title="Open-source Python library used for data processing and analytics">
-              <span class="badge-dot badge-pandas"></span>
-              <strong>pandas</strong> Data Processing &amp; Analytics
-            </div>
-            <div class="tech-badge" title="Open-source libraries used for generating graphs and visual analytics">
-              <span class="badge-dot badge-matplotlib"></span>
-              <span class="badge-dot badge-seaborn"></span>
-              <strong>matplotlib / seaborn</strong> Visual Analytics
-            </div>
-            <div class="tech-badge" title="Open-source library used for generating graphs and visual analytics">
-              <span class="badge-dot badge-plotly"></span>
-              <strong>plotly</strong> Interactive Visual Graphs
-            </div>
-            <div class="tech-badge" title="Open-source machine learning library used for topic classification and analytics support">
-              <span class="badge-dot badge-sklearn"></span>
-              <strong>scikit-learn</strong> ML Topic Classification
+          <div class="analytics-header-top">
+            <div class="analytics-header-text">
+              <div class="analytics-title-row">
+                <h1>Analytics Dashboard</h1>
+              </div>
             </div>
           </div>
         </div>
@@ -110,104 +97,229 @@
       <!-- Loading state -->
       <div class="an-loader" id="an-loader" aria-live="polite">
         <div class="an-spinner"></div>
-        <span>Loading analytics…</span>
+        <span>Aggregating analytics data…</span>
       </div>
 
       <!-- Error state -->
       <div class="an-error hidden" id="an-error" role="alert"></div>
 
       <!-- ============================================================
-           FR21: KPI Summary cards
+           Main Dashboard Content Section
            ============================================================ -->
       <section class="an-section hidden" id="an-content" aria-label="Analytics content">
 
+        <!-- 1. Minimalist KPI Executive Cards -->
         <div class="kpi-grid" id="kpi-grid" aria-label="Key performance indicators">
           <!-- Populated by analytics.js -->
         </div>
 
         <!-- ============================================================
-             Visual Graphs: Multi-View Tabs (Plotly, Seaborn/Matplotlib, Classic)
+             2. Visual Graphs: The 7 Core Graphs + View Mode Switcher
              ============================================================ -->
-        <div class="an-section-title">Visual Graphs &amp; Visual Analytics</div>
-
-        <div class="visual-tabs" role="tablist" aria-label="Visualization View Selector">
-          <button class="visual-tab-btn active" id="tab-btn-plotly" type="button" role="tab" aria-selected="true" data-tab="pane-plotly">
-            Interactive Graphs (Plotly)
-          </button>
-          <button class="visual-tab-btn" id="tab-btn-seaborn" type="button" role="tab" aria-selected="false" data-tab="pane-seaborn">
-            Statistical Graphs (Matplotlib / Seaborn)
-          </button>
-          <button class="visual-tab-btn" id="tab-btn-classic" type="button" role="tab" aria-selected="false" data-tab="pane-classic">
-            Standard Charts (Canvas)
-          </button>
+        <div class="section-header-row">
+          <div>
+            <h2 class="an-section-title">Visual Graphs</h2>
+            <p class="section-subtitle">Real-time visual distribution, accuracy metrics, and user feedback trends</p>
+          </div>
+          <div class="visual-tabs" role="tablist" aria-label="Visualization View Selector">
+            <button class="visual-tab-btn active" id="tab-btn-classic" type="button" role="tab" aria-selected="true" data-tab="pane-classic">
+              Standard Graphs (7 Charts)
+            </button>
+          </div>
         </div>
 
-        <!-- View 1: Plotly Interactive Visual Analytics -->
-        <div class="tab-pane" id="pane-plotly" role="tabpanel" aria-labelledby="tab-btn-plotly">
+        <!-- Pane 1: The 7 Core Visual Graphs -->
+        <div class="tab-pane" id="pane-classic" role="tabpanel" aria-labelledby="tab-btn-classic">
+          <div class="charts-grid-modern">
+
+            <!-- Graph 1: Topic Distribution (Pie Chart) -->
+            <div class="chart-card-modern" id="chart-topic-dist-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Topic Distribution</div>
+                  <div class="chart-card-sub-modern">Message volume share per domain</div>
+                </div>
+                <span class="graph-type-badge">Pie Chart</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-topic-dist" aria-label="Topic distribution pie chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 2: Accuracy per Topic (Bar Chart) -->
+            <div class="chart-card-modern" id="chart-topic-acc-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Accuracy per Topic</div>
+                  <div class="chart-card-sub-modern">Correctness percentage by domain</div>
+                </div>
+                <span class="graph-type-badge">Bar Chart</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-topic-acc" aria-label="Accuracy per topic bar chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 3: Accuracy vs Phase (Line Graph) -->
+            <div class="chart-card-modern" id="chart-phase-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Accuracy vs Phase</div>
+                  <div class="chart-card-sub-modern">Progression across Start, Middle, and End phases</div>
+                </div>
+                <span class="graph-type-badge">Line Graph</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-phase-acc" aria-label="Accuracy vs phase line graph" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 4: Correctness per Reply (Bar Chart) -->
+            <div class="chart-card-modern" id="chart-reply-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Correctness per Reply</div>
+                  <div class="chart-card-sub-modern">Sequential accuracy score for each response</div>
+                </div>
+                <span class="graph-type-badge">Bar Chart</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-reply-acc" aria-label="Correctness per reply bar chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 5: Response Time Trend (Line Graph) -->
+            <div class="chart-card-modern" id="chart-time-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Response Time Trend</div>
+                  <div class="chart-card-sub-modern">Latency timeline in milliseconds</div>
+                </div>
+                <span class="graph-type-badge">Line Graph</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-response-time" aria-label="Response time trend line graph" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 6: Rating Distribution (Bar Chart) -->
+            <div class="chart-card-modern" id="chart-rating-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Rating Distribution</div>
+                  <div class="chart-card-sub-modern">User satisfaction scores from 1 to 4 stars</div>
+                </div>
+                <span class="graph-type-badge">Bar Chart</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-rating-dist" aria-label="Rating distribution bar chart" role="img"></canvas>
+              </div>
+            </div>
+
+            <!-- Graph 7: Length Preference (Pie Chart) -->
+            <div class="chart-card-modern" id="chart-length-wrap">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Length Preference</div>
+                  <div class="chart-card-sub-modern">Proportion of Short, To the Point, and Lengthy</div>
+                </div>
+                <span class="graph-type-badge">Pie Chart</span>
+              </div>
+              <div class="chart-canvas-wrap-modern">
+                <canvas id="chart-length-dist" aria-label="Length preference pie chart" role="img"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Pane 2: Plotly Interactive Visual Analytics -->
+        <div class="tab-pane hidden" id="pane-plotly" role="tabpanel" aria-labelledby="tab-btn-plotly">
           <div class="plotly-grid">
-            <div class="plotly-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Interactive Topic Accuracy &amp; Volume</span>
-                <span class="seaborn-badge">plotly.js</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Interactive Topic Accuracy &amp; Volume</div>
+                  <div class="chart-card-sub-modern">Hover and inspect individual topic metrics</div>
+                </div>
+                <span class="graph-type-badge">Plotly</span>
               </div>
               <div class="plotly-plot-container" id="plotly-topic-plot"></div>
             </div>
 
-            <div class="plotly-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Conversation Phase Progression Curve</span>
-                <span class="seaborn-badge">plotly.js</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Conversation Phase Progression Curve</div>
+                  <div class="chart-card-sub-modern">Dynamic trajectory over conversation thirds</div>
+                </div>
+                <span class="graph-type-badge">Plotly</span>
               </div>
               <div class="plotly-plot-container" id="plotly-phase-plot"></div>
             </div>
 
-            <div class="plotly-card" style="grid-column: 1 / -1;">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Interactive Response Time Latency Timeline</span>
-                <span class="seaborn-badge">plotly.js</span>
+            <div class="chart-card-modern full-span">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Interactive Response Time Latency Timeline</div>
+                  <div class="chart-card-sub-modern">Zoomable turn-by-turn latency timeline</div>
+                </div>
+                <span class="graph-type-badge">Plotly</span>
               </div>
               <div class="plotly-plot-container" id="plotly-time-plot"></div>
             </div>
           </div>
         </div>
 
-        <!-- View 2: Matplotlib & Seaborn Statistical Graphs -->
+        <!-- Pane 3: Matplotlib & Seaborn Statistical Graphs -->
         <div class="tab-pane hidden" id="pane-seaborn" role="tabpanel" aria-labelledby="tab-btn-seaborn">
           <div class="seaborn-grid">
-            <div class="seaborn-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Topic Accuracy &amp; Distribution</span>
-                <span class="seaborn-badge">seaborn barplot</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Topic Accuracy &amp; Distribution</div>
+                  <div class="chart-card-sub-modern">Seaborn categorical barplot</div>
+                </div>
+                <span class="graph-type-badge">Seaborn</span>
               </div>
               <div class="seaborn-img-wrap">
                 <img id="seaborn-topic-img" class="seaborn-chart-img" alt="Seaborn Topic Accuracy Chart" />
               </div>
             </div>
 
-            <div class="seaborn-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Phase Accuracy Trend</span>
-                <span class="seaborn-badge">seaborn lineplot</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Phase Accuracy Trend</div>
+                  <div class="chart-card-sub-modern">Seaborn lineplot with confidence band</div>
+                </div>
+                <span class="graph-type-badge">Seaborn</span>
               </div>
               <div class="seaborn-img-wrap">
                 <img id="seaborn-phase-img" class="seaborn-chart-img" alt="Seaborn Phase Accuracy Chart" />
               </div>
             </div>
 
-            <div class="seaborn-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Response Time KDE Distribution</span>
-                <span class="seaborn-badge">seaborn histplot / kde</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Response Time KDE Distribution</div>
+                  <div class="chart-card-sub-modern">Kernel density estimation &amp; histogram</div>
+                </div>
+                <span class="graph-type-badge">Seaborn</span>
               </div>
               <div class="seaborn-img-wrap">
                 <img id="seaborn-resp-img" class="seaborn-chart-img" alt="Seaborn Response Time Distribution" />
               </div>
             </div>
 
-            <div class="seaborn-card">
-              <div class="seaborn-card-header">
-                <span class="seaborn-card-title">Rating Feedback Breakdown</span>
-                <span class="seaborn-badge">seaborn countplot</span>
+            <div class="chart-card-modern">
+              <div class="chart-card-header-modern">
+                <div>
+                  <div class="chart-card-title-modern">Rating Feedback Breakdown</div>
+                  <div class="chart-card-sub-modern">Seaborn countplot across stars</div>
+                </div>
+                <span class="graph-type-badge">Seaborn</span>
               </div>
               <div class="seaborn-img-wrap">
                 <img id="seaborn-rating-img" class="seaborn-chart-img" alt="Seaborn Rating Distribution" />
@@ -216,212 +328,66 @@
           </div>
         </div>
 
-        <!-- View 3: Standard Charts (Chart.js / Canvas) -->
-        <div class="tab-pane hidden" id="pane-classic" role="tabpanel" aria-labelledby="tab-btn-classic">
-          <div class="charts-grid">
-            <!-- FR20: Topic distribution -->
-            <div class="chart-card" id="chart-topic-dist-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Topic Distribution</span>
-                <span class="chart-card-sub">Message share per domain</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-topic-dist" aria-label="Topic distribution" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Accuracy per topic -->
-            <div class="chart-card" id="chart-topic-acc-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Accuracy per Topic</span>
-                <span class="chart-card-sub">% accuracy by domain</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-topic-acc" aria-label="Accuracy per topic" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Accuracy vs phase -->
-            <div class="chart-card" id="chart-phase-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Accuracy vs Phase</span>
-                <span class="chart-card-sub">Start / Middle / End accuracy</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-phase-acc" aria-label="Accuracy vs phase" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Correctness per reply -->
-            <div class="chart-card" id="chart-reply-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Correctness per Reply</span>
-                <span class="chart-card-sub">Accuracy % for each response</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-reply-acc" aria-label="Correctness per reply" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Response time trend -->
-            <div class="chart-card" id="chart-time-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Response time trend</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-response-time" aria-label="Response time trend" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Rating distribution -->
-            <div class="chart-card" id="chart-rating-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Rating Distribution</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-rating-dist" aria-label="Rating distribution" role="img"></canvas>
-              </div>
-            </div>
-
-            <!-- FR20: Length preference -->
-            <div class="chart-card" id="chart-length-wrap">
-              <div class="chart-card-header">
-                <span class="chart-card-title">Length Preference</span>
-                <span class="chart-card-sub">Short / To the Point / Lengthy</span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="chart-length-dist" aria-label="Length preference" role="img"></canvas>
-              </div>
-            </div>
-          </div>
+        <!-- ============================================================
+             3. Topic-Based Performance Section
+             ============================================================ -->
+        <div class="section-header-block">
+          <h2 class="an-section-title">Topic-Based Performance</h2>
+          <p class="section-subtitle">Domain-level interaction volume, response correctness, and accuracy percentages</p>
         </div>
 
-        <!-- ============================================================
-             Machine Learning Topic Classification & Analytics Support (scikit-learn)
-             ============================================================ -->
-        <div class="an-section-title">Machine Learning Topic Classification &amp; Analytics Support (scikit-learn)</div>
-        <div class="ml-support-grid">
-          <div class="ml-support-card">
-            <div class="ml-support-header">
-              <span class="ml-support-title">Classifier Model Specification</span>
-              <span class="seaborn-badge">scikit-learn</span>
-            </div>
-            <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 8px;">
-              Pipeline: <strong>TfidfVectorizer</strong> (1–2 n-grams, sublinear TF) + <strong>MultinomialNB</strong> (Laplace &alpha;=0.1)
-            </p>
-            <div style="display: flex; gap: 16px; margin-top: 12px;">
-              <div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: #F59E0B;" id="ml-vocab-size">—</div>
-                <div style="font-size: 0.75rem; color: var(--muted);">Feature Vocabulary</div>
-              </div>
-              <div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: #10B981;" id="ml-avg-conf">—</div>
-                <div style="font-size: 0.75rem; color: var(--muted);">Mean Prediction Confidence</div>
-              </div>
-              <div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: #3B82F6;" id="ml-high-conf">—</div>
-                <div style="font-size: 0.75rem; color: var(--muted);">&ge; 70% Confidence Share</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="ml-support-card" style="grid-column: span 2;">
-            <div class="ml-support-header">
-              <span class="ml-support-title">Extracted Domain Feature Keywords (TF-IDF Weights)</span>
-              <span class="seaborn-badge">TF-IDF n-grams</span>
-            </div>
-            <div id="ml-keywords-container">
-              <!-- Populated by analytics.js -->
-            </div>
-          </div>
+        <!-- Topic Quick Performance Strip -->
+        <div class="topic-strip" id="topic-strip">
+          <!-- Populated by analytics.js -->
         </div>
 
-        <!-- ============================================================
-             FR19: Analytical Tables (Powered by pandas)
-             ============================================================ -->
-        <div class="an-section-title">Analytical Tables &amp; Data Summaries (pandas Engine)</div>
-
-        <div class="tables-grid">
-          <!-- FR19: Phase-wise accuracy table -->
-          <div class="table-card">
-            <div class="table-card-title">Phase-wise Accuracy</div>
-            <div class="table-scroll">
-              <table id="tbl-phase-acc" class="an-table" aria-label="Phase accuracy table">
-                <thead>
-                  <tr>
-                    <th>Phase</th>
-                    <th>Accuracy %</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-phase-acc-body"></tbody>
-              </table>
-            </div>
+        <!-- Detailed Topic Performance Table -->
+        <div class="table-card-modern full-width">
+          <div class="table-card-header-modern">
+            <span class="table-card-title-modern">Topic Performance Matrix</span>
+            <span class="table-count-badge">5 Domains Tracked</span>
           </div>
-
-          <!-- FR19: Response time summary table -->
-          <div class="table-card">
-            <div class="table-card-title">Response Time Summary</div>
-            <div class="table-scroll">
-              <table id="tbl-resp-time" class="an-table" aria-label="Response time summary table">
-                <thead>
-                  <tr>
-                    <th>Metric</th>
-                    <th>Value (ms)</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-resp-time-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- FR19: Rating distribution table -->
-          <div class="table-card">
-            <div class="table-card-title">Rating Distribution</div>
-            <div class="table-scroll">
-              <table id="tbl-rating-dist" class="an-table" aria-label="Rating distribution table">
-                <thead>
-                  <tr>
-                    <th>Stars</th>
-                    <th>Count</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-rating-dist-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- FR19: Length preference table -->
-          <div class="table-card">
-            <div class="table-card-title">Length Preference</div>
-            <div class="table-scroll">
-              <table id="tbl-length-pref" class="an-table" aria-label="Length preference table">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Count</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-length-pref-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-        </div><!-- /tables-grid -->
-
-        <!-- ============================================================
-             FR21: Session-level insights
-             ============================================================ -->
-        <div class="an-section-title">Session-Level Insights</div>
-        <div class="table-card full-width table-wide">
           <div class="table-scroll">
-            <table id="tbl-sessions" class="an-table" aria-label="Session insights table">
+            <table id="tbl-topic-acc" class="an-table-modern" aria-label="Topic accuracy table">
+              <thead>
+                <tr>
+                  <th>Topic Domain</th>
+                  <th class="td-num">Messages</th>
+                  <th class="td-num">Rated</th>
+                  <th class="td-num">Not Rated</th>
+                  <th class="td-num">Correct</th>
+                  <th class="td-num">Partial</th>
+                  <th class="td-num">Incorrect</th>
+                  <th>Accuracy Score</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-topic-acc-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             4. Session-Level Insights Section
+             ============================================================ -->
+        <div class="section-header-block">
+          <h2 class="an-section-title">Session-Level Insights</h2>
+          <p class="section-subtitle">Multi-turn session history, primary domains explored, and performance outcomes</p>
+        </div>
+
+        <div class="table-card-modern full-width">
+          <div class="table-card-header-modern">
+            <span class="table-card-title-modern">Conversational Sessions Log</span>
+            <span class="table-count-badge" id="session-count-badge">All Sessions</span>
+          </div>
+          <div class="table-scroll">
+            <table id="tbl-sessions" class="an-table-modern" aria-label="Session insights table">
               <thead>
                 <tr>
                   <th>Session ID</th>
                   <th>Started</th>
-                  <th>Messages</th>
-                  <th>Topics</th>
-                  <th>Accuracy %</th>
+                  <th class="td-num">Messages</th>
+                  <th>Primary Topics</th>
+                  <th>Accuracy Rate</th>
                   <th>Avg Rating</th>
                 </tr>
               </thead>
@@ -430,46 +396,116 @@
           </div>
         </div>
 
-        <div class="an-section-title">Reply Correctness</div>
-        <div class="table-card full-width table-wide">
+        <!-- ============================================================
+             5. Analytical Tables & Feedback Breakdown
+             ============================================================ -->
+        <div class="section-header-block">
+          <h2 class="an-section-title">Analytical Tables</h2>
+          <p class="section-subtitle">Detailed statistical summaries for conversation phases, latencies, and user feedback</p>
+        </div>
+
+        <div class="tables-grid-modern">
+          <!-- Phase-wise accuracy table -->
+          <div class="table-card-modern">
+            <div class="table-card-header-modern">
+              <span class="table-card-title-modern">Phase-wise Accuracy</span>
+              <span class="graph-type-badge">Conversation Thirds</span>
+            </div>
+            <div class="table-scroll">
+              <table id="tbl-phase-acc" class="an-table-modern" aria-label="Phase accuracy table">
+                <thead>
+                  <tr>
+                    <th>Conversation Phase</th>
+                    <th class="td-num">Accuracy Rate</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-phase-acc-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Response time summary table -->
+          <div class="table-card-modern">
+            <div class="table-card-header-modern">
+              <span class="table-card-title-modern">Response Time Summary</span>
+              <span class="graph-type-badge">Latency (ms)</span>
+            </div>
+            <div class="table-scroll">
+              <table id="tbl-resp-time" class="an-table-modern" aria-label="Response time summary table">
+                <thead>
+                  <tr>
+                    <th>Benchmark Metric</th>
+                    <th class="td-num">Value</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-resp-time-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Rating distribution table -->
+          <div class="table-card-modern">
+            <div class="table-card-header-modern">
+              <span class="table-card-title-modern">Rating Distribution</span>
+              <span class="graph-type-badge">Feedback Stars</span>
+            </div>
+            <div class="table-scroll">
+              <table id="tbl-rating-dist" class="an-table-modern" aria-label="Rating distribution table">
+                <thead>
+                  <tr>
+                    <th>Star Rating</th>
+                    <th class="td-num">Responses</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-rating-dist-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Length preference table -->
+          <div class="table-card-modern">
+            <div class="table-card-header-modern">
+              <span class="table-card-title-modern">Length Preference</span>
+              <span class="graph-type-badge">Format Selection</span>
+            </div>
+            <div class="table-scroll">
+              <table id="tbl-length-pref" class="an-table-modern" aria-label="Length preference table">
+                <thead>
+                  <tr>
+                    <th>Length Category</th>
+                    <th class="td-num">Selections</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-length-pref-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reply Correctness Detailed Audit Table -->
+        <div class="table-card-modern full-width" style="margin-top: 14px;">
+          <div class="table-card-header-modern">
+            <div>
+              <span class="table-card-title-modern">Reply Correctness &amp; Interaction Audit Log</span>
+              <div class="chart-card-sub-modern">Granular record of each assistant message with correctness evaluation</div>
+            </div>
+          </div>
           <div class="table-scroll">
-            <table id="tbl-reply-corr" class="an-table" aria-label="Reply correctness table">
+            <table id="tbl-reply-corr" class="an-table-modern" aria-label="Reply correctness table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Time</th>
+                  <th class="td-num">#</th>
+                  <th>Timestamp</th>
                   <th>Session</th>
-                  <th>Topic</th>
+                  <th>Topic Domain</th>
                   <th>Phase</th>
                   <th>Correctness</th>
-                  <th>Accuracy</th>
-                  <th>Rating</th>
+                  <th class="td-num">Accuracy</th>
+                  <th class="td-num">Rating</th>
                   <th>Length</th>
                 </tr>
               </thead>
               <tbody id="tbl-reply-corr-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- FR19: Topic vs accuracy table -->
-        <div class="table-card full-width table-wide">
-          <div class="table-card-title">Topic vs Accuracy</div>
-          <div class="table-scroll">
-            <table id="tbl-topic-acc" class="an-table" aria-label="Topic accuracy table">
-              <thead>
-                <tr>
-                  <th>Topic</th>
-                  <th>Messages</th>
-                  <th>Rated</th>
-                  <th>Not Rated</th>
-                  <th>Correct</th>
-                  <th>Partial</th>
-                  <th>Incorrect</th>
-                  <th>Accuracy %</th>
-                </tr>
-              </thead>
-              <tbody id="tbl-topic-acc-body"></tbody>
             </table>
           </div>
         </div>

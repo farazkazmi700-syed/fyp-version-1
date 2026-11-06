@@ -129,20 +129,98 @@ function renderKPICards(d) {
   if (!grid) return;
 
   const cards = [
-    { label: 'Total Sessions',    value: d.total_sessions,                  color: 'blue'   },
-    { label: 'Total Responses',   value: d.total_messages,                  color: 'purple' },
-    { label: 'Overall Accuracy',  value: d.accuracy_rated_count ? `${d.overall_accuracy}%` : '—', color: 'green'  },
-    { label: 'Avg Rating',        value: d.avg_rating_count ? `${d.avg_rating} / 4` : '—', color: 'yellow' },
-    { label: 'Correct Replies',   value: `${d.correct_count} / ${d.rated_count}`, color: 'green'  },
-    { label: 'Incorrect Replies', value: `${d.incorrect_count} / ${d.rated_count}`, color: 'red'    },
+    {
+      label: 'Total Sessions',
+      value: d.total_sessions,
+      sub: `${d.total_messages} turns recorded`,
+      accent: 'blue',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+    },
+    {
+      label: 'Total Responses',
+      value: d.total_messages,
+      sub: 'LLaMA assistant messages',
+      accent: 'purple',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>',
+    },
+    {
+      label: 'Overall Accuracy',
+      value: d.accuracy_rated_count ? `${d.overall_accuracy}%` : '—',
+      sub: `${d.accuracy_rated_count} responses scored`,
+      accent: 'green',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+    },
+    {
+      label: 'Average Rating',
+      value: d.avg_rating_count ? `${d.avg_rating} / 4` : '—',
+      sub: `${d.avg_rating_count} ratings submitted`,
+      accent: 'yellow',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+    },
+    {
+      label: 'Correct Replies',
+      value: `${d.correct_count} / ${d.rated_count}`,
+      sub: `${d.overall_correctness_pct}% correctness ratio`,
+      accent: 'green',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+    },
+    {
+      label: 'Average Latency',
+      value: d.response_time_stats?.avg ? `${d.response_time_stats.avg} ms` : '—',
+      sub: d.response_time_stats?.count ? `Min ${d.response_time_stats.min}ms · Max ${d.response_time_stats.max}ms` : 'No latency recorded',
+      accent: 'cyan',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+    },
   ];
 
   grid.innerHTML = cards.map(c => `
-    <div class="kpi-card kpi-${c.color}">
-      <div class="kpi-value">${esc(c.value)}</div>
-      <div class="kpi-label">${esc(c.label)}</div>
+    <div class="kpi-card-modern kpi-${c.accent}">
+      <div class="kpi-card-top">
+        <span class="kpi-icon-wrap">${c.icon}</span>
+        <span class="kpi-sub-pill">${esc(c.sub)}</span>
+      </div>
+      <div class="kpi-value-modern">${esc(c.value)}</div>
+      <div class="kpi-label-modern">${esc(c.label)}</div>
     </div>
   `).join('');
+}
+
+/**
+ * Render horizontal quick topic performance strip cards.
+ */
+function renderTopicStrip(topicAccuracy) {
+  const container = document.getElementById('topic-strip');
+  if (!container) return;
+
+  const cardsHtml = TOPIC_ORDER.map((topic, idx) => {
+    const data = topicAccuracy?.[topic] || { count: 0, rated: 0, accuracy: 0.0 };
+    const color = topicColor(topic, idx);
+    const acc = data.rated ? data.accuracy : 0;
+    const badgeText = data.rated ? `${acc}% Acc` : 'No reviews';
+
+    return `
+      <div class="topic-strip-card">
+        <div class="topic-strip-header">
+          <div class="topic-strip-name">
+            <span class="topic-strip-dot" style="background: ${color}"></span>
+            <span>${esc(topic)}</span>
+          </div>
+          <span class="topic-strip-badge">${esc(badgeText)}</span>
+        </div>
+        <div class="topic-strip-body">
+          <div class="topic-strip-progress-bg">
+            <div class="topic-strip-progress-fill" style="width: ${data.rated ? Math.min(100, acc) : 0}%; background: ${color};"></div>
+          </div>
+          <div class="topic-strip-meta">
+            <span>${data.count} msg${data.count !== 1 ? 's' : ''}</span>
+            <span>${data.rated} rated</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = cardsHtml;
 }
 
 /* ============================================================
@@ -470,19 +548,35 @@ function renderTopicAccTable(topicAccuracy, replySeries = []) {
     if (Object.hasOwn(counts[reply.topic], status)) counts[reply.topic][status] += 1;
     return counts;
   }, {});
-  const rows = TOPIC_ORDER.map(topic => [topic, topicAccuracy[topic]]).filter(([, v]) => v).map(([topic, v]) => {
+
+  const rows = TOPIC_ORDER.map((topic, idx) => [topic, topicAccuracy?.[topic]]).filter(([, v]) => v).map(([topic, v], idx) => {
     const outcomes = replyCounts[topic] || { correct: 0, partial: 0, incorrect: 0 };
     const notRated = Math.max(0, v.count - v.rated);
+    const color = topicColor(topic, idx);
+    const acc = v.rated ? v.accuracy : 0;
+    const badgeCls = !v.rated ? 'badge-neutral' : acc >= 70 ? 'badge-success' : acc >= 40 ? 'badge-warning' : 'badge-danger';
     return `
     <tr>
-      <td>${esc(topic)}</td>
-      <td class="td-num">${v.count}</td>
+      <td>
+        <div class="topic-td-name">
+          <span class="topic-td-indicator" style="background: ${color};"></span>
+          <strong>${esc(topic)}</strong>
+        </div>
+      </td>
+      <td class="td-num"><span class="table-num-pill">${v.count}</span></td>
       <td class="td-num">${v.rated}</td>
-      <td class="td-num">${notRated}</td>
-      <td class="td-num">${outcomes.correct}</td>
-      <td class="td-num">${outcomes.partial}</td>
-      <td class="td-num">${outcomes.incorrect}</td>
-      <td class="td-num accent-${v.rated ? (v.accuracy >= 70 ? 'green' : v.accuracy >= 40 ? 'yellow' : 'red') : 'yellow'}">${v.rated ? `${v.accuracy}%` : '—'}</td>
+      <td class="td-num td-muted">${notRated}</td>
+      <td class="td-num accent-green">${outcomes.correct}</td>
+      <td class="td-num accent-yellow">${outcomes.partial}</td>
+      <td class="td-num accent-red">${outcomes.incorrect}</td>
+      <td>
+        <div class="table-acc-cell">
+          <div class="table-acc-bar-wrap">
+            <div class="table-acc-bar-fill" style="width: ${v.rated ? Math.min(100, acc) : 0}%; background: ${color};"></div>
+          </div>
+          <span class="an-badge ${badgeCls}">${v.rated ? `${acc}%` : 'Not Rated'}</span>
+        </div>
+      </td>
     </tr>
   `;
   });
@@ -495,15 +589,15 @@ function renderTopicAccTable(topicAccuracy, replySeries = []) {
 function renderReplyCorrectnessTable(series) {
   const rows = series.map(r => `
     <tr>
-      <td class="td-num">${r.index}</td>
-      <td>${formatDateTime(r.timestamp)}</td>
-      <td><code class="session-id">${esc(r.session_id)}</code></td>
-      <td>${esc(r.topic)}</td>
+      <td class="td-num"><span class="table-num-pill">#${r.index}</span></td>
+      <td class="td-muted">${formatDateTime(r.timestamp)}</td>
+      <td><span class="session-pill">${esc(r.session_id)}</span></td>
+      <td><strong>${esc(r.topic)}</strong></td>
       <td>${phaseBadge(r.phase)}</td>
       <td>${correctnessBadge(r.correctness)}</td>
-      <td class="td-num">${r.accuracy == null ? '—' : `${r.accuracy}%`}</td>
-      <td class="td-num">${r.rating ?? '—'}</td>
-      <td>${esc(r.length)}</td>
+      <td class="td-num font-mono">${r.accuracy == null ? '—' : `${r.accuracy}%`}</td>
+      <td class="td-num">${r.rating ? `★ ${r.rating}` : '—'}</td>
+      <td class="td-muted">${esc(r.length)}</td>
     </tr>
   `);
   fillTable('tbl-reply-corr-body', rows);
@@ -514,12 +608,21 @@ function renderReplyCorrectnessTable(series) {
  */
 function renderPhaseAccTable(phaseAccuracy, phaseRated, phaseCounts) {
   const phases = ['Start', 'Middle', 'End'];
-  const rows = phases.map(p => `
+  const rows = phases.map(p => {
+    const acc = phaseAccuracy[p] ?? 0;
+    const isRated = phaseRated?.[p] > 0;
+    const badgeCls = !isRated ? 'badge-neutral' : acc >= 70 ? 'badge-success' : 'badge-warning';
+    return `
     <tr>
       <td>${phaseBadge(p)}</td>
-      <td class="td-num accent-${(phaseAccuracy[p] ?? 0) >= 70 ? 'green' : 'yellow'}">${phaseRated?.[p] ? `${phaseAccuracy[p]}% (${phaseRated[p]}/${phaseCounts?.[p] ?? phaseRated[p]} rated)` : '—'}</td>
+      <td class="td-num">
+        <div class="table-acc-cell" style="justify-content: flex-end;">
+          <span class="an-badge ${badgeCls}">${isRated ? `${acc}% (${phaseRated[p]}/${phaseCounts?.[p] ?? phaseRated[p]})` : '—'}</span>
+        </div>
+      </td>
     </tr>
-  `);
+  `;
+  });
   fillTable('tbl-phase-acc-body', rows);
 }
 
@@ -528,14 +631,14 @@ function renderPhaseAccTable(phaseAccuracy, phaseRated, phaseCounts) {
  */
 function renderResponseTimeSummaryTable(stats) {
   const rows = [
-    ['Total Measured',  stats.count],
-    ['Minimum (ms)',    stats.min],
-    ['Maximum (ms)',    stats.max],
-    ['Average (ms)',    stats.avg],
+    ['Total Recorded Turns', stats.count ? `${stats.count} turns` : '0'],
+    ['Minimum Latency', stats.min ? `${stats.min} ms` : '—'],
+    ['Maximum Latency', stats.max ? `${stats.max} ms` : '—'],
+    ['Average Latency', stats.avg ? `${stats.avg} ms` : '—'],
   ].map(([label, val]) => `
     <tr>
-      <td>${esc(label)}</td>
-      <td class="td-num">${val}</td>
+      <td><strong>${esc(label)}</strong></td>
+      <td class="td-num font-mono">${esc(String(val))}</td>
     </tr>
   `);
   fillTable('tbl-resp-time-body', rows);
@@ -545,12 +648,18 @@ function renderResponseTimeSummaryTable(stats) {
  * FR19: Rating distribution table
  */
 function renderRatingDistTable(ratingDist) {
-  const rows = ['1', '2', '3', '4'].map(k => `
+  const total = ['1', '2', '3', '4'].reduce((sum, k) => sum + (ratingDist[k] ?? 0), 0);
+  const rows = ['4', '3', '2', '1'].map(k => {
+    const count = ratingDist[k] ?? 0;
+    const pct = total ? Math.round((count / total) * 100) : 0;
+    const stars = '★'.repeat(Number(k));
+    return `
     <tr>
-      <td>${k} Star${Number(k) > 1 ? 's' : ''}</td>
-      <td class="td-num">${ratingDist[k] ?? 0}</td>
+      <td><span class="rating-stars-label">${stars} ${k} Star${Number(k) > 1 ? 's' : ''}</span></td>
+      <td class="td-num font-mono"><strong>${count}</strong> <span class="td-muted">(${pct}%)</span></td>
     </tr>
-  `);
+  `;
+  });
   fillTable('tbl-rating-dist-body', rows);
 }
 
@@ -558,12 +667,16 @@ function renderRatingDistTable(ratingDist) {
  * FR19: Length preference table
  */
 function renderLengthPrefTable(lengthDist) {
-  const rows = Object.entries(lengthDist).map(([cat, count]) => `
+  const total = Object.values(lengthDist).reduce((sum, count) => sum + count, 0);
+  const rows = Object.entries(lengthDist).map(([cat, count]) => {
+    const pct = total ? Math.round((count / total) * 100) : 0;
+    return `
     <tr>
-      <td>${esc(cat)}</td>
-      <td class="td-num">${count}</td>
+      <td><strong>${esc(cat)}</strong></td>
+      <td class="td-num font-mono"><strong>${count}</strong> <span class="td-muted">(${pct}%)</span></td>
     </tr>
-  `);
+  `;
+  });
   fillTable('tbl-length-pref-body', rows);
 }
 
@@ -571,16 +684,29 @@ function renderLengthPrefTable(lengthDist) {
  * FR21: Session-level insights table
  */
 function renderSessionInsightsTable(sessions) {
-  const rows = sessions.map(s => `
+  const badge = document.getElementById('session-count-badge');
+  if (badge) badge.textContent = `${sessions.length} Recorded`;
+
+  const rows = sessions.map(s => {
+    const accClass = s.accuracy == null ? 'badge-neutral' : s.accuracy >= 70 ? 'badge-success' : s.accuracy >= 40 ? 'badge-warning' : 'badge-danger';
+    const ratingDisplay = s.avg_rating != null ? `★ ${s.avg_rating}` : '—';
+    return `
     <tr>
-      <td><code class="session-id">${esc(s.session_id)}</code></td>
-      <td>${formatDateTime(s.created_at)}</td>
-      <td class="td-num">${s.message_count}</td>
-      <td>${s.topics.map(t => `<span class="an-badge badge-topic">${esc(t)}</span>`).join(' ')}</td>
-      <td class="td-num">${s.accuracy != null ? `${s.accuracy}% (${s.rated_count} rated)` : '—'}</td>
-      <td class="td-num">${s.avg_rating != null ? s.avg_rating + ' / 4' : '—'}</td>
+      <td><span class="session-pill" title="${esc(s.full_id)}">${esc(s.session_id)}</span></td>
+      <td class="td-muted">${formatDateTime(s.created_at)}</td>
+      <td class="td-num"><span class="table-num-pill">${s.message_count}</span></td>
+      <td>
+        <div class="topic-tag-group">
+          ${s.topics.map((t, idx) => `<span class="topic-pill" style="border-color: ${topicColor(t, idx)}33; color: ${topicColor(t, idx)}; background: ${topicColor(t, idx)}12;">${esc(t)}</span>`).join('')}
+        </div>
+      </td>
+      <td>
+        <span class="an-badge ${accClass}">${s.accuracy != null ? `${s.accuracy}% (${s.rated_count} rated)` : 'No ratings'}</span>
+      </td>
+      <td><span class="rating-pill">${ratingDisplay}</span></td>
     </tr>
-  `);
+  `;
+  });
   fillTable('tbl-sessions-body', rows);
 }
 
@@ -684,26 +810,7 @@ function renderSeabornCharts(seabornData) {
 function renderMLSupport(mlData) {
   if (!mlData) return;
 
-  const vocabEl = document.getElementById('ml-vocab-size');
-  if (vocabEl) vocabEl.textContent = mlData.vocabulary_size || '—';
-
-  const confEl = document.getElementById('ml-avg-conf');
-  if (confEl) confEl.textContent = mlData.avg_confidence_pct ? `${mlData.avg_confidence_pct}%` : '—';
-
-  const highConfEl = document.getElementById('ml-high-conf');
-  if (highConfEl) highConfEl.textContent = mlData.high_confidence_pct ? `${mlData.high_confidence_pct}%` : '—';
-
-  const keywordsContainer = document.getElementById('ml-keywords-container');
-  if (keywordsContainer && mlData.top_domain_keywords) {
-    keywordsContainer.innerHTML = Object.entries(mlData.top_domain_keywords).map(([domain, tokens]) => `
-      <div style="margin-bottom: 8px;">
-        <span style="font-size: 0.8125rem; font-weight: 600; color: #F8FAFC;">${esc(domain)}:</span>
-        <div class="ml-tokens-wrap">
-          ${tokens.map(token => `<span class="ml-token-chip">${esc(token)}</span>`).join('')}
-        </div>
-      </div>
-    `).join('');
-  }
+  // ML KPI cards were removed from the page; nothing to render.
 }
 
 /* ============================================================
@@ -723,18 +830,11 @@ async function initAnalytics() {
 
     hide('an-loader');
 
-    // FR14: Update subtitle with real-time stored session retrieval status
-    const subtitle = document.getElementById('analytics-subtitle');
-    if (subtitle) {
-      if (data.total_sessions > 0) {
-        subtitle.textContent = `Analyzed ${data.total_sessions} stored session${data.total_sessions !== 1 ? 's' : ''} (${data.total_messages} response${data.total_messages !== 1 ? 's' : ''}) retrieved from database.`;
-      } else {
-        subtitle.textContent = 'No stored session data found in database. Start chatting to view analysis.';
-      }
-    }
-
     // Render KPI summary cards (FR21)
     renderKPICards(data);
+
+    // Render Topic-Based Performance Strip
+    renderTopicStrip(data.topic_accuracy);
 
     // Render all FR20 charts
     renderTopicDistChart(data.topic_accuracy);

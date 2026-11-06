@@ -1,13 +1,19 @@
-/* Small offline chart renderer used by the analytics dashboard.
- * It intentionally exposes the subset of the Chart.js API used by analytics.js.
+/* Modern minimal offline chart renderer for the analytics dashboard.
+ * Provides high-DPI, anti-aliased, responsive drawing for:
+ *   - Pie / Donut charts (Topic distribution, Length preference)
+ *   - Bar charts (Accuracy per topic, Correctness per reply, Rating distribution)
+ *   - Line graphs (Accuracy vs phase, Response time trend)
  */
 (function (global) {
+  'use strict';
+
   class OfflineChart {
     static defaults = {
       color: '#94A3B8',
-      borderColor: '#334155',
-      font: { family: 'Segoe UI, Arial, sans-serif', size: 12 },
-      plugins: { legend: { labels: { boxWidth: 14, padding: 14 } } },
+      borderColor: 'rgba(255, 255, 255, 0.07)',
+      gridColor: 'rgba(255, 255, 255, 0.04)',
+      font: { family: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif', size: 11, weight: '500' },
+      plugins: { legend: { labels: { boxWidth: 12, padding: 12 } } },
     };
 
     constructor(context, config) {
@@ -26,89 +32,137 @@
     draw() {
       const canvas = this.ctx.canvas;
       const parent = canvas.parentElement;
-      const width = canvas.clientWidth || parent?.clientWidth || 640;
+      const width = canvas.clientWidth || parent?.clientWidth || 540;
       if (!width) return;
-      const ratio = window.devicePixelRatio || 1;
-      const height = canvas.clientHeight || parent?.clientHeight || 320;
-      canvas.width = width * ratio;
-      canvas.height = height * ratio;
+      const ratio = window.devicePixelRatio || 2;
+      const height = canvas.clientHeight || parent?.clientHeight || 260;
+
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
       this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       this.ctx.clearRect(0, 0, width, height);
+
       const dataset = this.config.data.datasets?.[0] || { data: [] };
       const labels = this.config.data.labels || [];
       const type = this.config.type;
       const chartOptions = this.config.options || {};
-      const hasData = dataset.data.some(value => value != null);
+      const hasData = dataset.data && dataset.data.some(value => value != null);
+
       if (!hasData) {
-        this.ctx.fillStyle = OfflineChart.defaults.color;
+        this.ctx.fillStyle = '#64748B';
         this.ctx.textAlign = 'center';
-        this.ctx.font = `${OfflineChart.defaults.font.size}px ${OfflineChart.defaults.font.family}`;
-        this.ctx.fillText('No data available yet', width / 2, height / 2);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.font = `500 12px ${OfflineChart.defaults.font.family}`;
+        this.ctx.fillText('No recorded interactions yet', width / 2, height / 2);
         return;
       }
-      if (type === 'pie') return this.drawPie(width, height, labels, dataset);
-      this.drawAxes(width, height, chartOptions);
-      if (type === 'line') return this.drawLine(width, height, labels, dataset);
-      this.drawBars(width, height, labels, dataset);
+
+      if (type === 'pie') {
+        return this.drawPie(width, height, labels, dataset);
+      }
+
+      this.drawGridAndAxes(width, height, chartOptions);
+      if (type === 'line') {
+        return this.drawLine(width, height, labels, dataset);
+      }
+      return this.drawBars(width, height, labels, dataset);
     }
 
-    drawAxes(width, height, options) {
+    drawGridAndAxes(width, height, options) {
       const ctx = this.ctx;
       const axis = options.scales?.y || {};
       const min = axis.min ?? 0;
-      const max = axis.max ?? 1;
-      const ticks = options.scales?.x?.ticks || {};
       const dataset = this.config.data.datasets?.[0] || { data: [] };
+      const rawValues = dataset.data.filter(value => value != null).map(Number);
+      const dataMax = rawValues.length ? Math.max(...rawValues, 1) : 1;
       const isPercent = axis.max === 100;
-      const format = value => `${Number(value).toFixed(isPercent ? 0 : 0)}${isPercent ? '%' : ''}`;
-      const horizontalStart = 52;
-      const horizontalEnd = width - 12;
-      const verticalStart = 12;
-      const verticalEnd = height - 34;
+      const tickStep = isPercent ? 25 : axis.ticks?.stepSize || Math.max(1, Math.ceil((dataMax - min) / 4));
+      const tickMax = axis.max ?? Math.max(1, Math.ceil(dataMax / tickStep) * tickStep);
+
+      const leftMargin = 46;
+      const rightMargin = width - 14;
+      const topMargin = 16;
+      const bottomMargin = height - 32;
+
+      ctx.fillStyle = OfflineChart.defaults.color;
+      ctx.font = `500 10px ${OfflineChart.defaults.font.family}`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      // Subtle horizontal gridlines
+      for (let val = min; val <= tickMax; val += tickStep) {
+        const ratio = (val - min) / Math.max(tickMax - min, 1);
+        const y = bottomMargin - ratio * (bottomMargin - topMargin);
+
+        ctx.strokeStyle = OfflineChart.defaults.gridColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(leftMargin, y);
+        ctx.lineTo(rightMargin, y);
+        ctx.stroke();
+
+        const labelText = isPercent ? `${Math.round(val)}%` : String(val);
+        ctx.fillText(labelText, leftMargin - 8, y);
+      }
+
+      // X-axis baseline
       ctx.strokeStyle = OfflineChart.defaults.borderColor;
       ctx.lineWidth = 1;
-      if (options.scales?.y?.border?.display !== false) {
-        ctx.beginPath();
-        ctx.moveTo(48, verticalStart);
-        ctx.lineTo(48, verticalEnd);
-        ctx.lineTo(horizontalEnd, verticalEnd);
-        ctx.stroke();
-      }
-      ctx.fillStyle = OfflineChart.defaults.color;
-      ctx.font = `${OfflineChart.defaults.font.size - 1}px ${OfflineChart.defaults.font.family}`;
-      ctx.textAlign = 'right';
-      const dataMax = Math.max(...dataset.data.filter(value => value != null).map(Number), 1);
-      const tickStep = axis.max === 100 ? 25 : axis.ticks?.stepSize || Math.ceil((dataMax - min) / 4) || 1;
-      const tickMax = axis.max ?? Math.ceil(dataMax / tickStep) * tickStep;
-      for (let value = min; value <= tickMax; value += tickStep) {
-        const y = verticalEnd - (value - min) / Math.max(tickMax - min, 1) * (verticalEnd - verticalStart);
-        ctx.fillText(format(value), 44, y + 4);
-      }
-      return { horizontalStart, horizontalEnd, verticalStart, verticalEnd, min, max, ticks };
+      ctx.beginPath();
+      ctx.moveTo(leftMargin, bottomMargin);
+      ctx.lineTo(rightMargin, bottomMargin);
+      ctx.stroke();
     }
 
     drawBars(width, height, labels, dataset) {
       const ctx = this.ctx;
       const values = dataset.data.map(value => value == null ? null : Number(value));
       const axis = this.config.options?.scales?.y || {};
-      const max = axis.max ?? Math.max(...values.filter(value => value != null), 1);
+      const rawValues = values.filter(v => v != null);
+      const max = axis.max ?? Math.max(1, ...rawValues);
       const min = axis.min ?? 0;
       const range = Math.max(max - min, 1);
-      const plotW = width - 70;
-      const plotH = height - 54;
-      const validCount = values.filter(value => value != null).length;
-      const slot = plotW / Math.max(validCount, 1);
-      let barIndex = 0;
-      values.forEach((value, index) => {
-        if (value == null) return;
-        const barH = Math.max(0, (value - min) / range * plotH);
-        const baseline = height - 34 - (0 - min) / range * plotH;
+
+      const left = 48;
+      const right = width - 16;
+      const top = 16;
+      const bottom = height - 32;
+      const plotW = right - left;
+      const plotH = bottom - top;
+
+      const validCount = values.filter(v => v != null).length;
+      if (!validCount) return;
+
+      const slotW = plotW / Math.max(validCount, 1);
+      const barWidth = Math.min(Math.max(slotW * 0.52, 10), 42);
+
+      let visibleIndex = 0;
+      values.forEach((val, idx) => {
+        if (val == null) return;
+        const normH = Math.max(0, (val - min) / range * plotH);
+        const barX = left + visibleIndex * slotW + (slotW - barWidth) / 2;
+        const barY = bottom - normH;
+
         ctx.fillStyle = Array.isArray(dataset.backgroundColor)
-          ? dataset.backgroundColor[index] : (dataset.backgroundColor || '#3B82F6');
-        ctx.fillRect(52 + barIndex * slot + slot * 0.18, height - 34 - barH,
-          slot * 0.64, Math.abs(baseline - (height - 34 - barH)));
-        this.label(labels[index], 52 + barIndex * slot + slot / 2, height - 16, true);
-        barIndex += 1;
+          ? dataset.backgroundColor[idx]
+          : (dataset.backgroundColor || '#3B82F6');
+
+        // Rounded top bar
+        this.roundRect(ctx, barX, barY, barWidth, normH, Math.min(4, barWidth / 2));
+        ctx.fill();
+
+        // X-axis label
+        const lbl = labels[idx];
+        if (lbl) {
+          ctx.fillStyle = OfflineChart.defaults.color;
+          ctx.font = `500 10px ${OfflineChart.defaults.font.family}`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          const truncated = lbl.length > 12 ? lbl.slice(0, 11) + '…' : lbl;
+          ctx.fillText(truncated, barX + barWidth / 2, bottom + 8);
+        }
+
+        visibleIndex += 1;
       });
     }
 
@@ -116,98 +170,214 @@
       const ctx = this.ctx;
       const values = dataset.data.map(value => value == null ? null : Number(value));
       const axis = this.config.options?.scales?.y || {};
-      const max = axis.max ?? Math.max(...values.filter(value => value != null), 1);
+      const valid = values.filter(v => v != null);
+      const max = axis.max ?? Math.max(1, ...valid);
       const min = axis.min ?? 0;
       const range = Math.max(max - min, 1);
-      const plotW = width - 70;
-      const plotH = height - 54;
-      const ticks = this.config.options?.scales?.x?.ticks || {};
-      const indices = values.map((value, index) => value == null ? null : index).filter(index => index != null);
-      const firstIndex = indices[0] ?? 0;
-      const lastIndex = indices[indices.length - 1] ?? 0;
-      const xAt = index => 52 + (lastIndex === firstIndex ? plotW / 2 : (index - firstIndex) * plotW / (lastIndex - firstIndex));
-      ctx.strokeStyle = dataset.borderColor || '#10B981';
-      ctx.lineWidth = 2;
-      let drawing = false;
-      values.forEach((value, index) => {
-        if (value == null) { drawing = false; return; }
-        const x = xAt(index);
-        const y = height - 34 - (value - min) / range * plotH;
-        if (drawing) ctx.lineTo(x, y);
-        else { ctx.beginPath(); ctx.moveTo(x, y); drawing = true; }
+
+      const left = 48;
+      const right = width - 16;
+      const top = 16;
+      const bottom = height - 32;
+      const plotW = right - left;
+      const plotH = bottom - top;
+
+      const indices = values.map((v, i) => v == null ? null : i).filter(i => i != null);
+      if (!indices.length) return;
+
+      const firstIdx = indices[0];
+      const lastIdx = indices[indices.length - 1];
+      const xCoord = idx => indices.length === 1
+        ? left + plotW / 2
+        : left + ((idx - firstIdx) / Math.max(lastIdx - firstIdx, 1)) * plotW;
+      const yCoord = val => bottom - ((val - min) / range) * plotH;
+
+      const strokeColor = dataset.borderColor || '#10B981';
+
+      // 1. Draw gradient fill area
+      ctx.beginPath();
+      let started = false;
+      let firstX = 0;
+      let lastX = 0;
+
+      indices.forEach(idx => {
+        const x = xCoord(idx);
+        const y = yCoord(values[idx]);
+        if (!started) {
+          ctx.moveTo(x, y);
+          firstX = x;
+          started = true;
+        } else {
+          ctx.lineTo(x, y);
+        }
+        lastX = x;
+      });
+
+      if (started) {
+        ctx.lineTo(lastX, bottom);
+        ctx.lineTo(firstX, bottom);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, top, 0, bottom);
+        grad.addColorStop(0, strokeColor.startsWith('#') ? strokeColor + '30' : 'rgba(59, 130, 246, 0.2)');
+        grad.addColorStop(1, 'rgba(15, 23, 42, 0.0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      // 2. Draw line
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      started = false;
+
+      indices.forEach(idx => {
+        const x = xCoord(idx);
+        const y = yCoord(values[idx]);
+        if (!started) {
+          ctx.moveTo(x, y);
+          started = true;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // 3. Draw dots
+      indices.forEach(idx => {
+        const x = xCoord(idx);
+        const y = yCoord(values[idx]);
+        ctx.fillStyle = strokeColor;
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#0F172A';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
-      values.forEach((value, index) => {
-        if (value == null) return;
-        const x = xAt(index);
-        const y = height - 34 - (value - min) / range * plotH;
-        ctx.fillStyle = dataset.pointBackgroundColor || ctx.strokeStyle;
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      const tickLimit = ticks.maxTicksLimit || labels.length;
-      const labelStride = Math.max(1, Math.ceil(labels.length / tickLimit));
-      labels.forEach((label, index) => {
-        const x = 52 + (values.length === 1 ? plotW / 2 : index * plotW / (values.length - 1));
-        if (label != null && label !== '' && index % labelStride === 0) this.label(label, x, height - 16, true);
+
+      // 4. Draw X labels
+      ctx.fillStyle = OfflineChart.defaults.color;
+      ctx.font = `500 10px ${OfflineChart.defaults.font.family}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      const stride = Math.max(1, Math.ceil(labels.length / 8));
+      labels.forEach((lbl, idx) => {
+        if (lbl && idx % stride === 0) {
+          const x = indices.length === 1 ? left + plotW / 2 : left + (idx / Math.max(labels.length - 1, 1)) * plotW;
+          ctx.fillText(String(lbl), x, bottom + 8);
+        }
       });
     }
 
     drawPie(width, height, labels, dataset) {
       const ctx = this.ctx;
       const values = dataset.data.map(Number);
-      const total = values.reduce((sum, value) => sum + value, 0);
+      const total = values.reduce((acc, v) => acc + (v > 0 ? v : 0), 0);
+
       if (!total) {
-        ctx.fillStyle = OfflineChart.defaults.color;
+        ctx.fillStyle = '#64748B';
         ctx.textAlign = 'center';
-        ctx.font = `${OfflineChart.defaults.font.size}px ${OfflineChart.defaults.font.family}`;
-        ctx.fillText('No feedback data yet', width / 2, height / 2);
+        ctx.textBaseline = 'middle';
+        ctx.font = `500 12px ${OfflineChart.defaults.font.family}`;
+        ctx.fillText('No distribution data recorded', width / 2, height / 2);
         return;
       }
-      const legendPosition = this.config.options?.plugins?.legend?.position || 'bottom';
-      const sideLegend = legendPosition === 'right' && width >= 360;
-      const legendRows = sideLegend ? labels.length : Math.ceil(labels.length / Math.max(1, Math.floor(width / 150)));
-      const legendHeight = sideLegend ? 0 : legendRows * 18 + 12;
-      const radius = Math.min(sideLegend ? width * 0.24 : width * 0.34, (height - legendHeight) * 0.38);
-      const cx = sideLegend ? width * 0.34 : width * 0.5;
-      const cy = sideLegend ? height * 0.48 : Math.max(radius + 8, (height - legendHeight) * 0.48);
-      let angle = -Math.PI / 2;
-      values.forEach((value, index) => {
-        if (value <= 0) return;
-        const next = angle + value / total * Math.PI * 2;
+
+      const isWide = width >= 340;
+      const radius = Math.min(width * (isWide ? 0.22 : 0.32), height * 0.38);
+      const innerRadius = radius * 0.58; // Sleek modern donut cutout
+      const cx = isWide ? width * 0.33 : width * 0.5;
+      const cy = isWide ? height * 0.5 : height * 0.42;
+
+      let currentAngle = -Math.PI / 2;
+      values.forEach((val, idx) => {
+        if (val <= 0) return;
+        const sliceAngle = (val / total) * Math.PI * 2;
+        const endAngle = currentAngle + sliceAngle;
+
         ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, angle, next);
+        ctx.arc(cx, cy, radius, currentAngle, endAngle);
+        ctx.arc(cx, cy, innerRadius, endAngle, currentAngle, true);
         ctx.closePath();
-        ctx.fillStyle = dataset.backgroundColor?.[index] || '#3B82F6';
+
+        ctx.fillStyle = dataset.backgroundColor?.[idx] || '#3B82F6';
         ctx.fill();
-        angle = next;
+
+        // Sleek subtle segment gap
+        ctx.strokeStyle = '#0F172A';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        currentAngle = endAngle;
       });
-      labels.forEach((label, index) => {
-        const legendPosition = this.config.options?.plugins?.legend?.position || 'bottom';
-        const sideLegend = legendPosition === 'right' && width >= 360;
-        ctx.fillStyle = dataset.backgroundColor?.[index] || '#3B82F6';
-        if (sideLegend) {
-          ctx.fillRect(width * 0.68, 24 + index * 22, 10, 10);
-          this.label(label, width * 0.71, 33 + index * 22, false);
+
+      // Total count in donut center
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = `700 14px ${OfflineChart.defaults.font.family}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(total), cx, cy - 2);
+
+      ctx.fillStyle = OfflineChart.defaults.color;
+      ctx.font = `500 9px ${OfflineChart.defaults.font.family}`;
+      ctx.fillText('TOTAL', cx, cy + 12);
+
+      // Legend
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.font = `500 10.5px ${OfflineChart.defaults.font.family}`;
+
+      labels.forEach((lbl, idx) => {
+        const color = dataset.backgroundColor?.[idx] || '#3B82F6';
+        const count = values[idx] || 0;
+        const pct = total ? Math.round((count / total) * 100) : 0;
+
+        if (isWide) {
+          const itemY = 24 + idx * 24;
+          const itemX = width * 0.62;
+
+          ctx.fillStyle = color;
+          this.roundRect(ctx, itemX, itemY - 5, 10, 10, 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#F8FAFC';
+          ctx.fillText(`${lbl}`, itemX + 16, itemY);
+
+          ctx.fillStyle = OfflineChart.defaults.color;
+          ctx.fillText(`${count} (${pct}%)`, itemX + 16 + ctx.measureText(lbl + ' ').width, itemY);
         } else {
-          const columns = Math.max(1, Math.floor(width / 150));
-          const col = index % columns;
-          const row = Math.floor(index / columns);
-          const x = (width / columns) * col + 12;
-          ctx.fillRect(x, height - 42 + row * 18, 10, 10);
-          this.label(label, x + 15, height - 33 + row * 18, false);
+          const cols = 2;
+          const colIdx = idx % cols;
+          const rowIdx = Math.floor(idx / cols);
+          const itemX = 14 + colIdx * (width / 2);
+          const itemY = height - 44 + rowIdx * 18;
+
+          ctx.fillStyle = color;
+          this.roundRect(ctx, itemX, itemY - 4, 8, 8, 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#F8FAFC';
+          ctx.fillText(`${lbl} (${count})`, itemX + 14, itemY);
         }
       });
     }
 
-    label(value, x, y, centered) {
-      if (value === undefined) return;
-      this.ctx.fillStyle = OfflineChart.defaults.color;
-      this.ctx.font = `${OfflineChart.defaults.font.size}px ${OfflineChart.defaults.font.family}`;
-      this.ctx.textAlign = centered ? 'center' : 'left';
-      this.ctx.fillText(String(value), x, y);
+    roundRect(ctx, x, y, width, height, radius) {
+      if (height <= 0) return;
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+      ctx.lineTo(x + width, y + height);
+      ctx.lineTo(x, y + height);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
     }
 
     destroy() {
