@@ -453,7 +453,9 @@ body.sidebar-open {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  font-weight: 800;
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .sidebar-mark {
@@ -584,7 +586,14 @@ body.sidebar-open {
   min-height: var(--header-h);
   gap: 12px;
   margin: 0;
-  padding: 12px var(--page-pad);
+  padding: 10px var(--page-pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .chat-title {
@@ -601,9 +610,11 @@ body.sidebar-open {
 
 .chat-page-topbar .chat-title h1 {
   overflow: hidden;
-  font-size: clamp(20px, 3vw, 26px);
-  font-weight: 800;
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 700;
   line-height: 1.2;
+  color: var(--text);
+  letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -630,14 +641,19 @@ body.sidebar-open {
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 10px;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border: 1px solid var(--green);
   border-radius: 50%;
   background: transparent;
@@ -645,6 +661,7 @@ body.sidebar-open {
 
 .status-dot.online {
   background: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
 }
 
 .messages-container {
@@ -655,7 +672,8 @@ body.sidebar-open {
   flex: 1;
   flex-direction: column;
   gap: clamp(12px, 2vw, 18px);
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
   overflow-y: auto;
   padding: var(--page-pad);
 }
@@ -667,6 +685,7 @@ body.sidebar-open {
   align-items: center;
   justify-content: center;
   text-align: center;
+  align-self: center;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--glass);
@@ -2299,6 +2318,7 @@ code.session-id {
 }
 
 
+.chart-card-modern {
   background: var(--panel, #1E293B);
   border: 1px solid var(--border, #334155);
   border-radius: 12px;
@@ -2307,6 +2327,7 @@ code.session-id {
   flex-direction: column;
 }
 
+.chart-card-header-modern {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border, #334155);
   display: flex;
@@ -2314,11 +2335,13 @@ code.session-id {
   align-items: center;
 }
 
+.chart-card-title-modern {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text, #F8FAFC);
 }
 
+.graph-type-badge {
   font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 6px;
@@ -2327,6 +2350,7 @@ code.session-id {
   border: 1px solid rgba(76, 114, 176, 0.35);
 }
 
+.chart-canvas-wrap-modern {
   padding: 12px;
   display: flex;
   align-items: center;
@@ -2334,6 +2358,7 @@ code.session-id {
   background: #0B1120;
 }
 
+.chart-canvas-wrap-modern canvas {
   max-width: 100%;
   height: auto;
   border-radius: 6px;

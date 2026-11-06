@@ -175,12 +175,8 @@ function renderKPICards(d) {
 
   grid.innerHTML = cards.map(c => `
     <div class="kpi-card-modern kpi-${c.accent}">
-      <div class="kpi-card-top">
-        <span class="kpi-icon-wrap">${c.icon}</span>
-        <span class="kpi-sub-pill">${esc(c.sub)}</span>
-      </div>
-      <div class="kpi-value-modern">${esc(c.value)}</div>
       <div class="kpi-label-modern">${esc(c.label)}</div>
+      <div class="kpi-value-modern">${esc(c.value)}</div>
     </div>
   `).join('');
 }
