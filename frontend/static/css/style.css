@@ -166,7 +166,7 @@ textarea:focus-visible {
   isolation: isolate;
   background:
     linear-gradient(180deg, rgba(87, 119, 207, 0.619), rgba(5, 7, 13, 0.78)),
-    url("/static/img/login-ai.png") center / cover no-repeat;
+    url("/static/img/login.png") center / cover no-repeat;
   background-attachment: fixed;
 }
 
@@ -241,7 +241,6 @@ textarea:focus-visible {
   border-radius: var(--radius);
   background: var(--glass);
   padding: clamp(20px, 40vw, 38px);
-  backdrop-filter: blur(14px);
   box-shadow: var(--shadow);
 }
 
@@ -1347,7 +1346,7 @@ body.sidebar-open {
     min-height: 100svh;
     background:
       linear-gradient(180deg, rgba(0, 0, 0, 0.58), rgba(5, 7, 13, 0.9)),
-      url("/static/img/login-ai.png") 42% center / cover no-repeat;
+      url("/static/img/login.png") 42% center / cover no-repeat;
     background-attachment: scroll;
   }
 
