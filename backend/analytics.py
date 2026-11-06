@@ -3,8 +3,7 @@ analytics.py — Phase 3 Analytics System (FR14–FR22)
 Powered by:
   - pandas: Data processing, aggregation, and statistical analytics
   - scikit-learn: Machine learning topic classification and predictive analytics support
-  - matplotlib / seaborn: High-resolution visual graphs and statistical distribution plots
-  - plotly: Interactive dynamic charts and visual analytics
+  - matplotlib: High-resolution visual graphs and statistical distribution plots
 
 Blueprint exposing:
   GET  /analytics          → render the analytics dashboard page
@@ -24,8 +23,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import seaborn as sns
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -232,7 +229,7 @@ def fetch_session_list(user_id: str) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# matplotlib & seaborn: High-Resolution Visual Graphs
+# matplotlib: High-Resolution Visual Graphs
 # ---------------------------------------------------------------------------
 
 def _render_fig_to_base64(fig: plt.Figure) -> str:
@@ -245,224 +242,7 @@ def _render_fig_to_base64(fig: plt.Figure) -> str:
     return f"data:image/png;base64,{data}"
 
 
-def generate_seaborn_charts(df: pd.DataFrame, topic_acc: dict, phase_acc: dict) -> dict[str, str]:
-    """
-    Generate visual analytics charts using matplotlib and seaborn.
-    Configured with a clean dark theme matching the application.
-    """
-    charts: dict[str, str] = {}
-    sns.set_theme(style="darkgrid", rc={
-        "axes.facecolor": "#0F172A",
-        "figure.facecolor": "#1E293B",
-        "text.color": "#F8FAFC",
-        "axes.labelcolor": "#94A3B8",
-        "xtick.color": "#94A3B8",
-        "ytick.color": "#94A3B8",
-        "grid.color": "#334155",
-        "grid.alpha": 0.5,
-        "font.family": "sans-serif",
-    })
-
-    # 1. Topic Accuracy & Message Distribution Chart
-    try:
-        fig, ax = plt.subplots(figsize=(7, 3.8))
-        topics = list(TOPIC_DOMAINS)
-        accuracies = [topic_acc.get(t, {}).get("accuracy", 0.0) for t in topics]
-        counts = [topic_acc.get(t, {}).get("count", 0) for t in topics]
-
-        palette = ["#EF4444", "#F97316", "#FACC15", "#10B981", "#06B6D4"]
-        bars = sns.barplot(x=topics, y=accuracies, hue=topics, palette=palette, legend=False, ax=ax, edgecolor="#334155")
-        ax.set_ylim(0, 105)
-        ax.set_ylabel("Accuracy (%)", fontsize=10, fontweight="bold")
-        ax.set_title("Topic Accuracy & Interaction Share", fontsize=11, fontweight="bold", pad=12)
-        ax.tick_params(axis="x", rotation=15, labelsize=8.5)
-
-        for i, (bar, count) in enumerate(zip(bars.patches, counts)):
-            height = bar.get_height()
-            ax.annotate(f"{height:.1f}%\n({count})",
-                        xy=(bar.get_x() + bar.get_width() / 2, height),
-                        xytext=(0, 4), textcoords="offset points",
-                        ha="center", va="bottom", fontsize=7.5, color="#F8FAFC")
-
-        charts["topic_accuracy_chart"] = _render_fig_to_base64(fig)
-    except Exception:
-        plt.close("all")
-
-    # 2. Phase-wise Accuracy Progression
-    try:
-        fig, ax = plt.subplots(figsize=(6, 3.8))
-        phases = list(PHASES)
-        phase_vals = [phase_acc.get(p, 0.0) for p in phases]
-
-        sns.lineplot(x=phases, y=phase_vals, marker="o", markersize=9, color="#8B5CF6",
-                     linewidth=2.5, ax=ax, label="Phase Accuracy")
-        ax.fill_between(phases, phase_vals, alpha=0.18, color="#8B5CF6")
-        ax.set_ylim(0, 105)
-        ax.set_ylabel("Accuracy (%)", fontsize=10, fontweight="bold")
-        ax.set_title("Conversation Phase Accuracy Trend (Start → Middle → End)", fontsize=10.5, fontweight="bold", pad=12)
-
-        for x, y in zip(phases, phase_vals):
-            ax.annotate(f"{y:.1f}%", xy=(x, y), xytext=(0, 7), textcoords="offset points",
-                        ha="center", fontsize=8.5, fontweight="bold", color="#A78BFA")
-        ax.legend(loc="lower right", facecolor="#1E293B", edgecolor="#334155")
-
-        charts["phase_accuracy_chart"] = _render_fig_to_base64(fig)
-    except Exception:
-        plt.close("all")
-
-    # 3. Response Time Distribution & KDE
-    try:
-        fig, ax = plt.subplots(figsize=(6, 3.8))
-        timed = df["response_time_ms"].dropna() if not df.empty and "response_time_ms" in df.columns else pd.Series([])
-        if len(timed) > 1:
-            sns.histplot(timed, kde=True, color="#06B6D4", bins=min(len(timed), 12), ax=ax, edgecolor="#1E293B")
-        else:
-            sample_times = timed.tolist() if len(timed) == 1 else [280, 420, 510, 390]
-            sns.barplot(x=list(range(1, len(sample_times) + 1)), y=sample_times, color="#06B6D4", ax=ax)
-        ax.set_ylabel("Frequency", fontsize=10, fontweight="bold")
-        ax.set_xlabel("Latency (ms)", fontsize=10, fontweight="bold")
-        ax.set_title("Response Time Distribution (ms)", fontsize=11, fontweight="bold", pad=12)
-
-        charts["response_time_chart"] = _render_fig_to_base64(fig)
-    except Exception:
-        plt.close("all")
-
-    # 4. User Rating & Feedback Distribution
-    try:
-        fig, ax = plt.subplots(figsize=(6, 3.8))
-        star_counts = [int((df["rating"] == i).sum()) if not df.empty and "rating" in df.columns else 0 for i in range(1, 5)]
-        stars = ["1 Star", "2 Stars", "3 Stars", "4 Stars"]
-        palette = ["#EF4444", "#F97316", "#FACC15", "#10B981"]
-
-        bars = sns.barplot(x=stars, y=star_counts, hue=stars, palette=palette, legend=False, ax=ax, edgecolor="#334155")
-        ax.set_ylabel("Count", fontsize=10, fontweight="bold")
-        ax.set_title("Feedback Rating Distribution (Stars)", fontsize=11, fontweight="bold", pad=12)
-
-        for bar in bars.patches:
-            val = int(bar.get_height())
-            ax.annotate(f"{val}", xy=(bar.get_x() + bar.get_width() / 2, val),
-                        xytext=(0, 4), textcoords="offset points",
-                        ha="center", va="bottom", fontsize=8.5, color="#F8FAFC")
-
-        charts["rating_distribution_chart"] = _render_fig_to_base64(fig)
-    except Exception:
-        plt.close("all")
-
-    plt.close("all")
-    return charts
-
-
 # ---------------------------------------------------------------------------
-# plotly: Dynamic Interactive Graphs & Visual Analytics
-# ---------------------------------------------------------------------------
-
-def generate_plotly_figures(df: pd.DataFrame, topic_acc: dict, phase_acc: dict) -> dict[str, Any]:
-    """Generate interactive Plotly graph specifications."""
-    figures: dict[str, Any] = {}
-    dark_base = dict(
-        paper_bgcolor="#1E293B",
-        plot_bgcolor="#0F172A",
-        font=dict(color="#F8FAFC", family="Segoe UI, sans-serif"),
-        margin=dict(l=40, r=30, t=40, b=40),
-    )
-
-    # 1. Interactive Topic Accuracy Radar / Bar
-    try:
-        topics = list(TOPIC_DOMAINS)
-        accs = [topic_acc.get(t, {}).get("accuracy", 0.0) for t in topics]
-        counts = [topic_acc.get(t, {}).get("count", 0) for t in topics]
-
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            x=topics,
-            y=accs,
-            text=[f"{a}%<br>({c} msgs)" for a, c in zip(accs, counts)],
-            textposition="auto",
-            marker=dict(color=["#EF4444", "#F97316", "#FACC15", "#10B981", "#06B6D4"], line=dict(color="#334155", width=1.5)),
-            hovertemplate="<b>%{x}</b><br>Accuracy: %{y}%<extra></extra>",
-        ))
-        fig.update_layout(
-            **dark_base,
-            title="Interactive Topic Accuracy & Interaction Volume",
-            xaxis=dict(gridcolor="#334155", zerolinecolor="#334155"),
-            yaxis=dict(range=[0, 105], title="Accuracy (%)", gridcolor="#334155", zerolinecolor="#334155"),
-        )
-        figures["plotly_topic"] = json.loads(fig.to_json())
-    except Exception as e:
-        print("Error generating plotly_topic:", e)
-
-    # 2. Interactive Phase Progression
-    try:
-        phases = list(PHASES)
-        phase_vals = [phase_acc.get(p, 0.0) for p in phases]
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=phases,
-            y=phase_vals,
-            mode="lines+markers",
-            line=dict(color="#8B5CF6", width=3),
-            marker=dict(size=10, color="#C084FC"),
-            fill="tozeroy",
-            fillcolor="rgba(139, 92, 246, 0.15)",
-            hovertemplate="Phase: %{x}<br>Accuracy: %{y}%<extra></extra>",
-        ))
-        fig.update_layout(
-            **dark_base,
-            title="Interactive Conversation Phase Accuracy Curve",
-            xaxis=dict(gridcolor="#334155", zerolinecolor="#334155"),
-            yaxis=dict(range=[0, 105], title="Accuracy (%)", gridcolor="#334155", zerolinecolor="#334155"),
-        )
-        figures["plotly_phase"] = json.loads(fig.to_json())
-    except Exception as e:
-        print("Error generating plotly_phase:", e)
-
-    # 3. Interactive Response Time Timeline
-    try:
-        if not df.empty and "response_time_ms" in df.columns:
-            timed_df = df.dropna(subset=["response_time_ms"]).reset_index(drop=True)
-            x_vals = [f"#{i+1}" for i in range(len(timed_df))]
-            y_vals = timed_df["response_time_ms"].tolist()
-            topics = timed_df["topic"].tolist() if "topic" in timed_df.columns else []
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=x_vals,
-                y=y_vals,
-                mode="lines+markers",
-                line=dict(color="#06B6D4", width=2.5),
-                marker=dict(size=7, color="#67E8F9"),
-                customdata=topics,
-                hovertemplate="Message: %{x}<br>Latency: %{y} ms<br>Topic: %{customdata}<extra></extra>",
-            ))
-            fig.update_layout(
-                **dark_base,
-                title="Response Time Timeline (ms per response)",
-                xaxis=dict(title="Response Index", gridcolor="#334155", zerolinecolor="#334155"),
-                yaxis=dict(title="Time (ms)", gridcolor="#334155", zerolinecolor="#334155"),
-            )
-            figures["plotly_response_time"] = json.loads(fig.to_json())
-        else:
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=["#1", "#2", "#3", "#4"],
-                y=[350, 420, 290, 510],
-                mode="lines+markers",
-                line=dict(color="#06B6D4", width=2.5),
-                marker=dict(size=7, color="#67E8F9"),
-            ))
-            fig.update_layout(
-                **dark_base,
-                title="Response Time Timeline (sample trend)",
-                xaxis=dict(title="Response Index", gridcolor="#334155", zerolinecolor="#334155"),
-                yaxis=dict(title="Time (ms)", gridcolor="#334155", zerolinecolor="#334155"),
-            )
-            figures["plotly_response_time"] = json.loads(fig.to_json())
-    except Exception as e:
-        print("Error generating plotly_response_time:", e)
-
-    return figures
-
-
 # ---------------------------------------------------------------------------
 # pandas: Core Data Processing & Analytics Aggregation
 # ---------------------------------------------------------------------------
@@ -481,8 +261,6 @@ def compute_metrics(rows: list[dict]) -> dict:
         empty_phase_rated = {p: 0 for p in PHASES}
         empty_phase_counts = {p: 0 for p in PHASES}
         empty_ml = get_ml_analytics_support(df)
-        seaborn_plots = generate_seaborn_charts(df, empty_topic_acc, empty_phase_acc)
-        plotly_figs = generate_plotly_figures(df, empty_topic_acc, empty_phase_acc)
 
         return {
             "total_sessions": 0,
@@ -508,8 +286,6 @@ def compute_metrics(rows: list[dict]) -> dict:
             "reply_accuracy_series": [],
             "session_insights": [],
             "ml_support": empty_ml,
-            "seaborn_charts": seaborn_plots,
-            "plotly_charts": plotly_figs,
             "pandas_stats": {
                 "engine": "pandas DataFrame",
                 "rows_processed": 0,
@@ -643,9 +419,7 @@ def compute_metrics(rows: list[dict]) -> dict:
     # 11. Scikit-learn ML analytics support
     ml_support = get_ml_analytics_support(df)
 
-    # 12. Matplotlib / Seaborn & Plotly graph generation
-    seaborn_plots = generate_seaborn_charts(df, topic_accuracy, phase_accuracy)
-    plotly_figs = generate_plotly_figures(df, topic_accuracy, phase_accuracy)
+    # 12. Matplotlib graph generation
 
     # 13. Pandas Data Processing Telemetry
     pandas_stats = {
@@ -679,8 +453,6 @@ def compute_metrics(rows: list[dict]) -> dict:
         "reply_accuracy_series": reply_accuracy_series,
         "session_insights": session_insights,
         "ml_support": ml_support,
-        "seaborn_charts": seaborn_plots,
-        "plotly_charts": plotly_figs,
         "pandas_stats": pandas_stats,
     }
 

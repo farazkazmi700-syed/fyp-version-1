@@ -12,8 +12,6 @@
 
   <!-- Shared stylesheet -->
   <link rel="stylesheet" href="/static/css/style.css" />
-  <!-- Plotly for interactive dynamic graphs -->
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <!-- Analytics charts offline renderer -->
   <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
 </head>
@@ -233,100 +231,7 @@
           </div>
         </div>
 
-        <!-- Pane 2: Plotly Interactive Visual Analytics -->
-        <div class="tab-pane hidden" id="pane-plotly" role="tabpanel" aria-labelledby="tab-btn-plotly">
-          <div class="plotly-grid">
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Interactive Topic Accuracy &amp; Volume</div>
-                  <div class="chart-card-sub-modern">Hover and inspect individual topic metrics</div>
-                </div>
-                <span class="graph-type-badge">Plotly</span>
-              </div>
-              <div class="plotly-plot-container" id="plotly-topic-plot"></div>
-            </div>
 
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Conversation Phase Progression Curve</div>
-                  <div class="chart-card-sub-modern">Dynamic trajectory over conversation thirds</div>
-                </div>
-                <span class="graph-type-badge">Plotly</span>
-              </div>
-              <div class="plotly-plot-container" id="plotly-phase-plot"></div>
-            </div>
-
-            <div class="chart-card-modern full-span">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Interactive Response Time Latency Timeline</div>
-                  <div class="chart-card-sub-modern">Zoomable turn-by-turn latency timeline</div>
-                </div>
-                <span class="graph-type-badge">Plotly</span>
-              </div>
-              <div class="plotly-plot-container" id="plotly-time-plot"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pane 3: Matplotlib & Seaborn Statistical Graphs -->
-        <div class="tab-pane hidden" id="pane-seaborn" role="tabpanel" aria-labelledby="tab-btn-seaborn">
-          <div class="seaborn-grid">
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Topic Accuracy &amp; Distribution</div>
-                  <div class="chart-card-sub-modern">Seaborn categorical barplot</div>
-                </div>
-                <span class="graph-type-badge">Seaborn</span>
-              </div>
-              <div class="seaborn-img-wrap">
-                <img id="seaborn-topic-img" class="seaborn-chart-img" alt="Seaborn Topic Accuracy Chart" />
-              </div>
-            </div>
-
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Phase Accuracy Trend</div>
-                  <div class="chart-card-sub-modern">Seaborn lineplot with confidence band</div>
-                </div>
-                <span class="graph-type-badge">Seaborn</span>
-              </div>
-              <div class="seaborn-img-wrap">
-                <img id="seaborn-phase-img" class="seaborn-chart-img" alt="Seaborn Phase Accuracy Chart" />
-              </div>
-            </div>
-
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Response Time KDE Distribution</div>
-                  <div class="chart-card-sub-modern">Kernel density estimation &amp; histogram</div>
-                </div>
-                <span class="graph-type-badge">Seaborn</span>
-              </div>
-              <div class="seaborn-img-wrap">
-                <img id="seaborn-resp-img" class="seaborn-chart-img" alt="Seaborn Response Time Distribution" />
-              </div>
-            </div>
-
-            <div class="chart-card-modern">
-              <div class="chart-card-header-modern">
-                <div>
-                  <div class="chart-card-title-modern">Rating Feedback Breakdown</div>
-                  <div class="chart-card-sub-modern">Seaborn countplot across stars</div>
-                </div>
-                <span class="graph-type-badge">Seaborn</span>
-              </div>
-              <div class="seaborn-img-wrap">
-                <img id="seaborn-rating-img" class="seaborn-chart-img" alt="Seaborn Rating Distribution" />
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- ============================================================
              3. Topic-Based Performance Section

@@ -1,4 +1,4 @@
-/* Core dark theme: black surfaces, white text, dark red, blue, and green accents. */
+﻿/* Core dark theme: black surfaces, white text, dark red, blue, and green accents. */
 :root {
   --bg: #05070d;
   --panel: #0d111a;
@@ -1421,7 +1421,7 @@ body.sidebar-open {
 }
 
 /* ==========================================================================
-   PHASE 3 — Analytics Dashboard Styles
+   PHASE 3 â€” Analytics Dashboard Styles
    FR21: Dashboard display, FR19: Table generation, FR20: Graph generation
    ========================================================================== */
 
@@ -1876,7 +1876,7 @@ code.session-id {
 }
 
 /* ==========================================================================
-   Feedback page — chat theme alignment and responsive polish
+   Feedback page â€” chat theme alignment and responsive polish
    FR12: feedback capture, FR13: feedback review.
    All rules are scoped to .feedback-body so the chat page is unaffected.
    ========================================================================== */
@@ -2218,13 +2218,8 @@ code.session-id {
 }
 
 
-
-
-
-
-
 /* ==========================================================================
-   Advanced Analytics Stack Styling: pandas, matplotlib, seaborn, plotly, scikit-learn
+   Advanced Analytics Stack Styling: pandas, matplotlib, scikit-learn
    ========================================================================== */
 .analytics-tech-stack {
   display: flex;
@@ -2261,8 +2256,6 @@ code.session-id {
 
 .badge-pandas { background: #E70488; box-shadow: 0 0 6px rgba(231,4,136,0.6); }
 .badge-matplotlib { background: #11557C; box-shadow: 0 0 6px rgba(17,85,124,0.6); }
-.badge-seaborn { background: #4C72B0; box-shadow: 0 0 6px rgba(76,114,176,0.6); }
-.badge-plotly { background: #3F4F75; box-shadow: 0 0 6px rgba(63,79,117,0.6); }
 .badge-sklearn { background: #F89939; box-shadow: 0 0 6px rgba(248,153,57,0.6); }
 
 .visual-tabs {
@@ -2305,13 +2298,7 @@ code.session-id {
   display: none !important;
 }
 
-.seaborn-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
-  gap: clamp(16px, 1.4vw, 24px);
-}
 
-.seaborn-card {
   background: var(--panel, #1E293B);
   border: 1px solid var(--border, #334155);
   border-radius: 12px;
@@ -2320,7 +2307,6 @@ code.session-id {
   flex-direction: column;
 }
 
-.seaborn-card-header {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border, #334155);
   display: flex;
@@ -2328,13 +2314,11 @@ code.session-id {
   align-items: center;
 }
 
-.seaborn-card-title {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text, #F8FAFC);
 }
 
-.seaborn-badge {
   font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 6px;
@@ -2343,7 +2327,6 @@ code.session-id {
   border: 1px solid rgba(76, 114, 176, 0.35);
 }
 
-.seaborn-img-wrap {
   padding: 12px;
   display: flex;
   align-items: center;
@@ -2351,32 +2334,12 @@ code.session-id {
   background: #0B1120;
 }
 
-.seaborn-chart-img {
   max-width: 100%;
   height: auto;
   border-radius: 6px;
   display: block;
 }
 
-.plotly-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
-  gap: clamp(16px, 1.4vw, 24px);
-}
-
-.plotly-card {
-  background: var(--panel, #1E293B);
-  border: 1px solid var(--border, #334155);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.plotly-plot-container {
-  min-height: 340px;
-  width: 100%;
-}
 
 .ml-support-grid {
   display: grid;
@@ -2970,3 +2933,4 @@ code.session-id {
   color: #64748B;
   font-weight: 500;
 }
+
