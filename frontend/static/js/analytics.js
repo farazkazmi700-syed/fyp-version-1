@@ -585,6 +585,128 @@ function renderSessionInsightsTable(sessions) {
 }
 
 /* ============================================================
+   Plotly, Seaborn & scikit-learn ML Analytics Renderers
+   ============================================================ */
+
+function bindVisualTabs() {
+  const tabButtons = document.querySelectorAll('.visual-tab-btn');
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const targetId = btn.dataset.tab;
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        if (pane.id === targetId) {
+          pane.classList.remove('hidden');
+        } else {
+          pane.classList.add('hidden');
+        }
+      });
+
+      // Resize Plotly charts when switching back to the interactive tab
+      if (targetId === 'pane-plotly' && window.Plotly) {
+        ['plotly-topic-plot', 'plotly-phase-plot', 'plotly-time-plot'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) window.Plotly.Plots.resize(el);
+        });
+      }
+    });
+  });
+}
+
+function renderPlotlyCharts(plotlyData) {
+  if (!window.Plotly || !plotlyData) return;
+
+  try {
+    if (plotlyData.plotly_topic) {
+      const topicPlot = document.getElementById('plotly-topic-plot');
+      if (topicPlot) {
+        window.Plotly.newPlot(topicPlot, plotlyData.plotly_topic.data, plotlyData.plotly_topic.layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+      }
+    }
+
+    if (plotlyData.plotly_phase) {
+      const phasePlot = document.getElementById('plotly-phase-plot');
+      if (phasePlot) {
+        window.Plotly.newPlot(phasePlot, plotlyData.plotly_phase.data, plotlyData.plotly_phase.layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+      }
+    }
+
+    if (plotlyData.plotly_response_time) {
+      const timePlot = document.getElementById('plotly-time-plot');
+      if (timePlot) {
+        window.Plotly.newPlot(timePlot, plotlyData.plotly_response_time.data, plotlyData.plotly_response_time.layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Plotly rendering notice:', err);
+  }
+}
+
+function renderSeabornCharts(seabornData) {
+  if (!seabornData) return;
+
+  const topicImg = document.getElementById('seaborn-topic-img');
+  if (topicImg && seabornData.topic_accuracy_chart) {
+    topicImg.src = seabornData.topic_accuracy_chart;
+  }
+
+  const phaseImg = document.getElementById('seaborn-phase-img');
+  if (phaseImg && seabornData.phase_accuracy_chart) {
+    phaseImg.src = seabornData.phase_accuracy_chart;
+  }
+
+  const respImg = document.getElementById('seaborn-resp-img');
+  if (respImg && seabornData.response_time_chart) {
+    respImg.src = seabornData.response_time_chart;
+  }
+
+  const ratingImg = document.getElementById('seaborn-rating-img');
+  if (ratingImg && seabornData.rating_distribution_chart) {
+    ratingImg.src = seabornData.rating_distribution_chart;
+  }
+}
+
+function renderMLSupport(mlData) {
+  if (!mlData) return;
+
+  const vocabEl = document.getElementById('ml-vocab-size');
+  if (vocabEl) vocabEl.textContent = mlData.vocabulary_size || '—';
+
+  const confEl = document.getElementById('ml-avg-conf');
+  if (confEl) confEl.textContent = mlData.avg_confidence_pct ? `${mlData.avg_confidence_pct}%` : '—';
+
+  const highConfEl = document.getElementById('ml-high-conf');
+  if (highConfEl) highConfEl.textContent = mlData.high_confidence_pct ? `${mlData.high_confidence_pct}%` : '—';
+
+  const keywordsContainer = document.getElementById('ml-keywords-container');
+  if (keywordsContainer && mlData.top_domain_keywords) {
+    keywordsContainer.innerHTML = Object.entries(mlData.top_domain_keywords).map(([domain, tokens]) => `
+      <div style="margin-bottom: 8px;">
+        <span style="font-size: 0.8125rem; font-weight: 600; color: #F8FAFC;">${esc(domain)}:</span>
+        <div class="ml-tokens-wrap">
+          ${tokens.map(token => `<span class="ml-token-chip">${esc(token)}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+/* ============================================================
    Main initialisation — fetch data and wire everything together
    ============================================================ */
 
@@ -633,6 +755,12 @@ async function initAnalytics() {
 
     // FR21: session insights table
     renderSessionInsightsTable(data.session_insights);
+
+    // Advanced Visual Analytics & ML Support (Plotly, Seaborn/Matplotlib, scikit-learn)
+    bindVisualTabs();
+    renderPlotlyCharts(data.plotly_charts);
+    renderSeabornCharts(data.seaborn_charts);
+    renderMLSupport(data.ml_support);
 
     // Reveal the full dashboard
     show('an-content');

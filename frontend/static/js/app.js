@@ -140,14 +140,9 @@ const ui = {
         <div class="msg-meta">
           <span>${ui.formatTime(timestamp)}</span>
           ${isAssistant && Number.isFinite(responseTimeMs) ? `<span>${responseTimeMs} ms</span>` : ''}
-          ${isAssistant && messageId ? `<button class="btn-feedback-trigger" data-id="${messageId}">Feedback</button>` : ''}
         </div>
       </div>
     `;
-
-    message.querySelector('.btn-feedback-trigger')?.addEventListener('click', event => {
-      feedback.open(event.currentTarget.dataset.id);
-    });
 
     container.appendChild(message);
     container.scrollTop = container.scrollHeight;
@@ -192,11 +187,7 @@ const ui = {
     message.querySelector('.streaming-status').outerHTML = `
       <span>${ui.formatTime(result.timestamp)}</span>
       <span>${result.response_time_ms} ms</span>
-      <button class="btn-feedback-trigger" data-id="${ui.escapeHtml(result.message_id)}">Feedback</button>
     `;
-    message.querySelector('.btn-feedback-trigger').addEventListener('click', event => {
-      feedback.open(event.currentTarget.dataset.id);
-    });
   },
 
   renderWelcome() {
@@ -243,13 +234,6 @@ const ui = {
     const label = document.querySelector('.status-text');
     dot.className = `status-dot ${online ? 'online' : 'offline'}`;
     label.textContent = text;
-  },
-};
-
-// Feedback action: opens the dedicated feedback page for one assistant message.
-const feedback = {
-  open(messageId) {
-    window.location.href = `/feedback?message_id=${encodeURIComponent(messageId)}`;
   },
 };
 

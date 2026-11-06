@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify, redirect, url_for
 
 from .db import get_db
 from .utils import current_user, current_user_id, json_payload, now_iso, require_login
@@ -12,8 +12,8 @@ feedback_bp = Blueprint("feedback", __name__)
 @feedback_bp.route("/feedback")
 @require_login
 def feedback_page():
-    """Render the feedback page for general or message-specific feedback."""
-    return render_template("feedback.html", user=current_user())
+    """Redirect to chat since the feedback page has been removed."""
+    return redirect(url_for("chat.chat"))
 
 
 @feedback_bp.route("/api/feedback", methods=["POST"])
