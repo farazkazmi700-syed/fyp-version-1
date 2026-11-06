@@ -112,7 +112,12 @@ const ui = {
       }
       const d = new Date(str);
       if (isNaN(d.getTime())) return '';
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleTimeString('en-GB', {
+        timeZone: 'America/Los_Angeles',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      });
     } catch {
       return '';
     }
@@ -232,6 +237,7 @@ const ui = {
   setConnectionStatus(online, text) {
     const dot = document.querySelector('.status-dot');
     const label = document.querySelector('.status-text');
+    if (!dot || !label) return;
     dot.className = `status-dot ${online ? 'online' : 'offline'}`;
     label.textContent = text;
   },

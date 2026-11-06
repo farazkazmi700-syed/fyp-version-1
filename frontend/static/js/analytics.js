@@ -85,7 +85,12 @@ function formatDateTime(iso) {
     }
     const d = new Date(str);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('en-GB', {
+      timeZone: 'America/Los_Angeles',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
   } catch {
     return '—';
   }
