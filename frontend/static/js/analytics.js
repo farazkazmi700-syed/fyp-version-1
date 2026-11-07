@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 /**
  * analytics.js — Phase 3 Analytics System frontend controller
@@ -90,7 +90,7 @@ function formatDateTime(iso) {
       hour: '2-digit',
       minute: '2-digit',
       hourCycle: 'h23',
-    });
+    }); + ' hrs'
   } catch {
     return '—';
   }
