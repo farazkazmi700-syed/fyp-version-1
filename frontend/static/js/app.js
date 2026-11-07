@@ -107,13 +107,14 @@ const ui = {
     if (!iso) return '';
     try {
       let str = String(iso).trim();
-      if (!str.endsWith('Z') && !/[+-]\d{2}(:\d{2})?$/.test(str)) {
-        str += 'Z';
+      // Legacy timestamps without an offset were stored in Pakistan time.
+      if (!str.endsWith('Z') && !/[+-]\d{2}(:?\d{2})?$/.test(str)) {
+        str += '+05:00';
       }
       const d = new Date(str);
       if (isNaN(d.getTime())) return '';
       return d.toLocaleTimeString('en-GB', {
-        timeZone: 'America/Los_Angeles',
+        timeZone: 'Asia/Karachi',
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',

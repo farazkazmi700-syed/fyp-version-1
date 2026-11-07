@@ -13,7 +13,7 @@ PKT = ZoneInfo("Asia/Karachi")
 
 def now_iso() -> str:
     """Return the current Pakistan-time timestamp in ISO 8601 format."""
-    return datetime.now(PKT).strftime("%Y-%m-%dT%H:%M:%S")
+    return datetime.now(PKT).isoformat(timespec="seconds")
 
 
 def json_payload() -> dict:

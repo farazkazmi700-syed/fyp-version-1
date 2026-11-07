@@ -191,8 +191,8 @@ def send_message_frontend():
             response_received_at = datetime.now(timezone.utc)
             assistant_content = "".join(assistant_parts)
             response_time_ms = round((response_received_at - request_started_at).total_seconds() * 1000)
-            request_ts = request_started_at.astimezone(PKT).strftime("%Y-%m-%dT%H:%M:%S")
-            reply_ts = response_received_at.astimezone(PKT).strftime("%Y-%m-%dT%H:%M:%S")
+            request_ts = request_started_at.astimezone(PKT).isoformat(timespec="seconds")
+            reply_ts = response_received_at.astimezone(PKT).isoformat(timespec="seconds")
             assistant_msg_id = str(uuid.uuid4())
             db.execute(
                 """
