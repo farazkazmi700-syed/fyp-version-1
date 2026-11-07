@@ -1,16 +1,19 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
+from zoneinfo import ZoneInfo
 
 from flask import jsonify, redirect, request, session, url_for
 
 from .config import Config
 
+PKT = ZoneInfo("Asia/Karachi")
+
 
 def now_iso() -> str:
-    """Return the current UTC timestamp in ISO 8601 format with Z."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    """Return the current Pakistan-time timestamp in ISO 8601 format."""
+    return datetime.now(PKT).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def json_payload() -> dict:

@@ -117,7 +117,7 @@ const ui = {
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',
-      }) + ' hrs';
+      });
     } catch {
       return '';
     }

@@ -14,7 +14,7 @@ if __package__ in (None, ""):
     from backend.feedback import feedback_bp
     from backend.analytics import analytics_bp
     from backend.llm import load_llama_model
-    from backend.utils import google_credentials_path
+    from backend.utils import PKT, google_credentials_path
 else:
     from .auth import auth_bp
     from .chat import chat_bp
@@ -23,7 +23,7 @@ else:
     from .feedback import feedback_bp
     from .analytics import analytics_bp
     from .llm import load_llama_model
-    from .utils import google_credentials_path
+    from .utils import PKT, google_credentials_path
 
 
 def create_app():
@@ -65,7 +65,7 @@ def create_app():
             "local_llama": "configured" if llama_ok else "missing",
             "google_oauth": "configured" if oauth_ok else "missing",
             "model": Config.LLAMA_MODEL,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(PKT).strftime("%Y-%m-%dT%H:%M:%S"),
         })
 
     return app

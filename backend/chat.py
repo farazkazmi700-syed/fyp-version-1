@@ -7,7 +7,7 @@ from flask import Blueprint, Response, jsonify, render_template, session, stream
 from .analytics import classify_topic, save_final_analytics_summary
 from .db import get_db
 from .llm import LocalLlamaError, build_llm_messages, model_manager
-from .utils import current_user, current_user_id, json_payload, now_iso, require_login
+from .utils import PKT, current_user, current_user_id, json_payload, now_iso, require_login
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -191,8 +191,8 @@ def send_message_frontend():
             response_received_at = datetime.now(timezone.utc)
             assistant_content = "".join(assistant_parts)
             response_time_ms = round((response_received_at - request_started_at).total_seconds() * 1000)
-            request_ts = request_started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-            reply_ts = response_received_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+            request_ts = request_started_at.astimezone(PKT).strftime("%Y-%m-%dT%H:%M:%S")
+            reply_ts = response_received_at.astimezone(PKT).strftime("%Y-%m-%dT%H:%M:%S")
             assistant_msg_id = str(uuid.uuid4())
             db.execute(
                 """
