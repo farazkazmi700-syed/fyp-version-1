@@ -71,7 +71,14 @@
             <h1>Chat</h1>
           </div>
         </div>
-        <div class="chat-header-actions">
+        <!-- Header tools: service status + new chat, aligned on one baseline. -->
+        <div class="chat-header-tools">
+          <!-- Service connectivity indicator: green = model reachable, red = offline. -->
+          <div class="connection-status" id="connection-status" title="Model service status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-text">Checking…</span>
+          </div>
+          <span class="header-divider" aria-hidden="true"></span>
           <button class="btn-new-chat" id="btn-new-chat" type="button" title="Start a new conversation" aria-label="Start a new chat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
               <path d="M12 5v14M5 12h14" />

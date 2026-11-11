@@ -1,3 +1,4 @@
+import glob
 import sqlite3
 
 from flask import g
@@ -27,6 +28,32 @@ def close_db(error=None):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+
+
+def list_feedback_tables(directory_pattern: str = "*.db") -> dict:
+    """List feedback-related tables found in each local *.db file.
+
+    Merged from the former standalone check_db.py utility script.
+    """
+    report = {}
+    for path in glob.glob(directory_pattern):
+        con = sqlite3.connect(path)
+        try:
+            names = [
+                row[0]
+                for row in con.execute(
+                    "SELECT name FROM sqlite_master WHERE name LIKE '%feedback%'"
+                )
+            ]
+        finally:
+            con.close()
+        report[path] = names
+    return report
+
+
+if __name__ == "__main__":
+    for db_path, tables in list_feedback_tables().items():
+        print(db_path, tables)
 
 
 def init_db():

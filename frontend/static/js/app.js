@@ -103,6 +103,37 @@ const ui = {
       .replaceAll("'", '&#039;');
   },
 
+  // Assistant avatar: a compact robot glyph that fits the 38px avatar box.
+  botAvatar() {
+    return `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="msg-avatar-icon">
+        <rect x="4" y="8" width="16" height="12" rx="3"></rect>
+        <path d="M12 4v4"></path>
+        <circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"></circle>
+        <line x1="9" y1="13" x2="9" y2="13"></line>
+        <line x1="15" y1="13" x2="15" y2="13"></line>
+      </svg>
+    `;
+  },
+
+  // User avatar: the Google profile photo when available, otherwise initials.
+  userAvatar() {
+    const name = window.CURRENT_USER?.name?.trim() || 'You';
+    const img = document.getElementById('user-avatar');
+    const src = img && img.src && !img.src.endsWith('avatar.svg') ? img.src : '';
+    if (src) {
+      return `<img src="${ui.escapeHtml(src)}" alt="" onerror="this.outerHTML='<span class=msg-initials>${ui.escapeHtml(ui.initials(name))}</span>'">`;
+    }
+    return `<span class="msg-initials">${ui.escapeHtml(ui.initials(name))}</span>`;
+  },
+
+  initials(name) {
+    const parts = String(name).split(/\s+/).filter(Boolean);
+    const first = parts[0]?.[0] || 'U';
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+    return (first + last).toUpperCase();
+  },
+
   formatTime(iso) {
     if (!iso) return '';
     try {
@@ -133,12 +164,9 @@ const ui = {
     if (messageId) message.dataset.msgId = messageId;
 
     const isAssistant = role === 'assistant';
-    const userAvatar = document.getElementById('user-avatar')?.src;
     const avatarContent = isAssistant
-      ? 'Ollama'
-      : userAvatar
-        ? `<img src="${ui.escapeHtml(userAvatar)}" alt="">`
-        : 'You';
+      ? ui.botAvatar()
+      : ui.userAvatar();
     message.innerHTML = `
       <div class="msg-avatar">${avatarContent}</div>
       <div class="msg-content">
@@ -160,7 +188,7 @@ const ui = {
     const message = document.createElement('div');
     message.className = 'message assistant';
     message.innerHTML = `
-      <div class="msg-avatar">Ollama</div>
+      <div class="msg-avatar">${ui.botAvatar()}</div>
       <div class="msg-content">
         <div class="msg-bubble"></div>
         <div class="msg-meta"><span class="streaming-status">Generating…</span></div>
@@ -218,7 +246,7 @@ const ui = {
     typing.className = 'message assistant typing-indicator';
     typing.id = 'typing-indicator';
     typing.innerHTML = `
-      <div class="msg-avatar">Ollama</div>
+      <div class="msg-avatar">${ui.botAvatar()}</div>
       <div class="msg-content">
         <div class="msg-bubble">
           <span class="typing-dot"></span>
