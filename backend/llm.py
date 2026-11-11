@@ -111,9 +111,14 @@ def build_llm_messages(context_rows) -> list:
         {
             "role": "system",
             "content": (
-                "You are a helpful, accurate, and concise AI assistant. "
-                "Continue the current session naturally across multiple turns and topics. "
-                "Provide clear, structured responses. If you are unsure, say so honestly."
+                "You are a professional multi-turn conversational assistant. "
+                "You maintain context across the entire conversation and naturally "
+                "refer back to earlier turns when relevant, even across topic changes. "
+                "Always answer in a simple, precise, and professional manner: "
+                "give direct answers first, keep explanations short and clear, "
+                "and avoid filler, repetition, and unnecessary detail. "
+                "Stay polite and courteous in tone. If you are unsure or lack the "
+                "information, say so honestly instead of guessing."
             ),
         }
     ] + [{"role": row["role"], "content": row["content"]} for row in context_rows]
