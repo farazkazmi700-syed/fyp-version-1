@@ -765,15 +765,16 @@ body.sidebar-open {
 .messages-container {
   display: flex;
   width: 100%;
-  max-width: var(--content-w);
   min-height: 0;
   flex: 1;
   flex-direction: column;
   gap: clamp(12px, 2vw, 18px);
-  margin-left: auto;
-  margin-right: auto;
   overflow-y: auto;
+  /* Scrollbar hugs the right screen edge while the content stays centered
+     within the usual --content-w column. */
   padding: var(--page-pad);
+  padding-inline: max(var(--page-pad), calc((100% - var(--content-w)) / 2));
+  scrollbar-gutter: stable;
 }
 
 .welcome-message {
